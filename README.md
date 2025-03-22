@@ -1,6 +1,16 @@
-# ez-frame-generator-ms
+# Contextualização
 
-# Componentes da Solução ez-frame
+# Desenho de Arquitetura
+
+# Pré requisitos
+
+# Estrutura de diretórios do projeto
+
+# Modelagem do banco de dados
+
+# Como compilar o projeto
+
+# Componentes da solução ez-frame
 
 | **Componente**               | **Finalidade**                                                                 | **Justificativa**                                                                                                                                                                                                                                                                                      |
 |------------------------------|--------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -14,3 +24,7 @@
 | **AWS Fargate (via EKS)**    | Execução do `ez-frame-generator-ms`                                           | O Fargate permite rodar o processamento dos vídeos de forma escalável e sem a necessidade de gerenciar servidores, otimizando recursos e custos, além de se adaptar bem ao processamento paralelo exigido pela solução.                                                                                |
 | **Amazon SES**               | Envio de e-mails de notificação em caso de erro                                | Atende ao requisito de notificação automática para o usuário em caso de falha no processamento. É um serviço simples, eficiente e com baixo custo, ideal para esse tipo de comunicação.                                                                                                                 |
 | **GitHub Actions** | Automatização de build, testes e deploys | O GitHub Actions foi escolhido por estar amplamente consolidado no mercado e por oferecer uma integração direta com repositórios GitHub, simplificando pipelines de entrega contínua. Além disso, a equipe já possui familiaridade com a ferramenta, o que reduz tempo de configuração e acelera o processo de entrega contínua. Essa escolha também reflete uma tendência atual de muitas empresas que estão migrando de soluções como Jenkins e Azure DevOps para plataformas mais leves e integradas, como o próprio GitHub Actions. |
+
+# Desenvolvido por:
+@tchfer : RM357414<br>
+@ThaynaraDaSilva : RM357418<br>
