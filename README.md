@@ -1,4 +1,5 @@
-# Contextualização
+
+# Contextualização - ez-frame-generator-ms
 
 # Desenho de Arquitetura
 
@@ -8,9 +9,9 @@
 
 # Modelagem do banco de dados
 
-# Como compilar o projeto ez-frame-generator-ms
+# Como compilar o projeto
 
-# Componentes da solução ez-frame
+# Componentes da solução global ez-frame
 
 | **Componente**               | **Finalidade**                                                                 | **Justificativa**                                                                                                                                                                                                                                                                                      |
 |------------------------------|--------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
