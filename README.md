@@ -2,8 +2,6 @@
 
 # Solução
 
-## ✅ Componentes da Solução – `ez-frame-generator-ms`
-
 | **Componente**               | **Finalidade**                                                                 | **Justificativa**                                                                                                                                                                                                                                                                                      |
 |------------------------------|--------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Clean Architecture**       | Organização interna da solução                                                 | Foi escolhida para garantir uma estrutura modular, de fácil manutenção e testes. Essa separação clara entre regras de negócio e infraestrutura facilita a escalabilidade da solução ao longo do tempo, conforme o sistema evolui.                                                                     |
