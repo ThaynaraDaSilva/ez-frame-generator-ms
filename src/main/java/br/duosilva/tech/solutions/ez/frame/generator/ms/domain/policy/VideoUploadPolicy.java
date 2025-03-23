@@ -3,7 +3,7 @@ package br.duosilva.tech.solutions.ez.frame.generator.ms.domain.policy;
 import org.springframework.stereotype.Component;
 
 @Component
-public class UploadPolicy {
+public class VideoUploadPolicy {
 
 	public long getMaxFileSizeBytes() {
 		return 50 * 1024 * 1024;

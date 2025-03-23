@@ -12,10 +12,12 @@ import javax.imageio.ImageIO;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Java2DFrameConverter;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import br.duosilva.tech.solutions.ez.frame.generator.ms.frameworks.exception.BusinessRuleException;
 
+@Component
 public class FFmpegFrameExtractor {
 	
 	
@@ -51,7 +53,7 @@ public class FFmpegFrameExtractor {
 	        frameGrabber.release();
 
 	    } catch (IOException e) {
-	    	throw new BusinessRuleException("Error extracting frames from video");
+	    	throw new BusinessRuleException("Error extracting frames: " + e.getMessage());
 	    }
 
 	    return frames;

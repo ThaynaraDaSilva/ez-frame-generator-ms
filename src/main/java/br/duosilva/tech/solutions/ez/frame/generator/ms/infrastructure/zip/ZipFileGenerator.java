@@ -1,4 +1,4 @@
-package br.duosilva.tech.solutions.ez.frame.generator.ms.infrastructure.storage;
+package br.duosilva.tech.solutions.ez.frame.generator.ms.infrastructure.zip;
 
 import java.io.File;
 import java.io.FileInputStream;

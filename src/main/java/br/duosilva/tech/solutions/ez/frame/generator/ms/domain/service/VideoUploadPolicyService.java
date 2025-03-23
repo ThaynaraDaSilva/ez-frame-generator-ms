@@ -5,16 +5,16 @@ import java.util.Arrays;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import br.duosilva.tech.solutions.ez.frame.generator.ms.domain.policy.UploadPolicy;
+import br.duosilva.tech.solutions.ez.frame.generator.ms.domain.policy.VideoUploadPolicy;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.frameworks.exception.BusinessRuleException;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.frameworks.exception.ErrorMessages;
 
 @Service
 public class VideoUploadPolicyService {
 
-	private final UploadPolicy uploadPolicy;
+	private final VideoUploadPolicy uploadPolicy;
 
-	public VideoUploadPolicyService(UploadPolicy uploadPolicy) {
+	public VideoUploadPolicyService(VideoUploadPolicy uploadPolicy) {
 		this.uploadPolicy = uploadPolicy;
 	}
 
