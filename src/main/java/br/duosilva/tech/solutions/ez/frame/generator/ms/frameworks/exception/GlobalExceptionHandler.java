@@ -9,32 +9,26 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-	
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-	
-	  @ExceptionHandler(BusinessRuleException.class)
-	    public ResponseEntity<ErrorResponse> handleBusinessRuleException(BusinessRuleException ex) {
-		  ErrorResponse errorResponse = new ErrorResponse(ex.getMessage());
-		  System.out.println("\n ########### Business Rule Exception");
-	        return ResponseEntity
-	                .status(HttpStatus.UNPROCESSABLE_ENTITY)
-	                .body(errorResponse); // HTTP 422
-	    }
 
-	    @ExceptionHandler(IllegalArgumentException.class)
-	    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
-	    	 ErrorResponse errorResponse = new ErrorResponse(ex.getMessage());
-	        return ResponseEntity
-	                .badRequest()
-	                .body(errorResponse); 
-	    }
+	@ExceptionHandler(BusinessRuleException.class)
+	public ResponseEntity<ErrorResponse> handleBusinessRuleException(BusinessRuleException ex) {
+		ErrorResponse errorResponse = new ErrorResponse(ex.getMessage());
+		System.out.println("\n ########### Business Rule Exception");
+		return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorResponse); // HTTP 422
+	}
 
-	    @ExceptionHandler(Exception.class)
-	    public ResponseEntity<String> handleGenericException(Exception ex) {
-	        return ResponseEntity
-	                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-	                .body("Unexpected error: " + ex.getMessage()); // HTTP 500
-	    }
-	    
+	@ExceptionHandler(IllegalArgumentException.class)
+	public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
+		ErrorResponse errorResponse = new ErrorResponse(ex.getMessage());
+		return ResponseEntity.badRequest().body(errorResponse);
+	}
+
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<String> handleGenericException(Exception ex) {
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error: " + ex.getMessage()); // HTTP
+																														// 500
+	}
 
 }

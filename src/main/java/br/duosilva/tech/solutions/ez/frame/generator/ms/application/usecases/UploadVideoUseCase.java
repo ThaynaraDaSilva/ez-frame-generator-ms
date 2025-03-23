@@ -24,22 +24,16 @@ public class UploadVideoUseCase {
 			throw new IllegalArgumentException("No video to process.");
 		} else {
 
-			try {
+			for (MultipartFile file : multipartFiles) {
+				if (file.isEmpty())
+					continue;
 
-				for (MultipartFile file : multipartFiles) {
-					if (file.isEmpty()) continue;
-					
-					// 1. Validacoes de regras de negocio (plano Free)
-					videoUploadPolicyService.validateFileSize(file);
-					videoUploadPolicyService.validateUserDailyUploadLimit(userId);
-					
+				// 1. Validacoes de regras de negocio (plano Free)
+				videoUploadPolicyService.validateFileSize(file);
+				videoUploadPolicyService.validateUserDailyUploadLimit(userId);
 
-		            // 2. Processamento tecnico do vídeo
-		            videoProcessingService.generateFrames(file, userId);
-				}
-
-			} catch (Exception e) {
-
+				// 2. Processamento tecnico do vídeo
+				videoProcessingService.generateFrames(file, userId);
 			}
 
 		}

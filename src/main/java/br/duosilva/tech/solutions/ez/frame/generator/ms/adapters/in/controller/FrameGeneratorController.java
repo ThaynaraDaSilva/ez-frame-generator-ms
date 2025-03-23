@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping("/v1/ms/frame-generator")
 @Tag(name = "Frame Generator Microsservice", description = "Microsserviço responsável por processar vídeos e gerar imagens (frames) automaticamente a partir deles.")
 public class FrameGeneratorController {
-	
+
 	private static final String USER_ID = "6c0dc669-a18e-40d1-93ea-ba328a8daaed";
 
 	private UploadVideoUseCase uploadVideoUseCase;
@@ -30,14 +30,16 @@ public class FrameGeneratorController {
 	@PostMapping(value = "/upload-video", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<Void> uploadVideo(@RequestPart("files") MultipartFile[] multipartFiles) {
 
-		uploadVideoUseCase.processUploadedVideo(multipartFiles,USER_ID);
-		throw new BusinessRuleException("Erro de negócio simulado.");
-		//return ResponseEntity.accepted().build(); // 202 - Aceito para processamento assíncrono
+		uploadVideoUseCase.processUploadedVideo(multipartFiles, USER_ID);
+		return ResponseEntity.accepted().build(); // 202 - Aceito para processamento assíncrono
+
+		// throw new BusinessRuleException("Erro de negócio simulado.");
+
 	}
-	
-	@GetMapping("/test-exception")
-	public ResponseEntity<Void> testException() {
-	    throw new IllegalArgumentException("Simulação de erro para validação do handler.");
+
+	@GetMapping("/test-error")
+	public void testError() {
+		throw new BusinessRuleException("Erro simulado");
 	}
 
 }

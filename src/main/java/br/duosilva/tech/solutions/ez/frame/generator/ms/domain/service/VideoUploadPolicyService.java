@@ -31,11 +31,6 @@ public class VideoUploadPolicyService {
 			 System.out.println("\n ########### MAX UPLOAD LIMIT");
 			throw new BusinessRuleException(ErrorMessages.UPLOAD_LIMIT_EXCEEDED_FREE_PLAN);
 		}
-		/*
-		 * System.out.println("################################");
-		 * System.out.println("VALIDATE USER DAILY UPLOAD LIMIT");
-		 * System.out.println("################################");
-		 */
 	}
 
 	public void validateMaxFilesPerRequest(MultipartFile[] files) {
