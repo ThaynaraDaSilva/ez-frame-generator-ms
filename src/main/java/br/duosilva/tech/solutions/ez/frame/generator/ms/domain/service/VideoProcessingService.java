@@ -10,8 +10,10 @@ public class VideoProcessingService {
 
 	public VideoMetadata generateFrames(MultipartFile multipartFiles, String userId) {
 		
-		
-		
+		System.out.println("################################");
+		System.out.println("GENERATE FRAMES");
+		System.out.println("################################");
+	
 		 return null;
 	}
 	

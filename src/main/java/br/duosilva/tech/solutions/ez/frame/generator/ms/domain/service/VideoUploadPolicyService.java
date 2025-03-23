@@ -2,12 +2,14 @@ package br.duosilva.tech.solutions.ez.frame.generator.ms.domain.service;
 
 import java.util.Arrays;
 
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import br.duosilva.tech.solutions.ez.frame.generator.ms.domain.policy.UploadPolicy;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.frameworks.exception.BusinessRuleException;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.frameworks.exception.ErrorMessages;
 
+@Service
 public class VideoUploadPolicyService {
 
 
@@ -24,11 +26,15 @@ public class VideoUploadPolicyService {
 	}
 
 	public void validateUserDailyUploadLimit(String userId) {
-	    int uploadsToday = 1; // Placeholder — depois será puxado do repositório
+	    int uploadsToday = 10; // Placeholder — depois será puxado do repositório
 
 	    if (uploadsToday >= uploadPolicy.getMaxUploadsPerDay()) {
-	        throw new BusinessRuleException(ErrorMessages.UPLOAD_LIMIT_EXCEEDED_FREE_PLAN);
+	        throw new BusinessRuleException(ErrorMessages.UPLOAD_LIMIT_EXCEEDED_FREE_PLAN); 
 	    }
+	    /*
+	    System.out.println("################################");
+		System.out.println("VALIDATE USER DAILY UPLOAD LIMIT");
+		System.out.println("################################");*/
 	}
 	
 	public void validateMaxFilesPerRequest(MultipartFile[] files) {

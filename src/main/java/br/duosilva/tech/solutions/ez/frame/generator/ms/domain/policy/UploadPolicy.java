@@ -1,5 +1,8 @@
 package br.duosilva.tech.solutions.ez.frame.generator.ms.domain.policy;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class UploadPolicy {
 
 	public long getMaxFileSizeBytes() {
