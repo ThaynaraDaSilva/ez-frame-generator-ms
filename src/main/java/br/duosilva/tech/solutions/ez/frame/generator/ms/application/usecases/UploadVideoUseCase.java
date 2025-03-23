@@ -5,6 +5,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import br.duosilva.tech.solutions.ez.frame.generator.ms.domain.service.VideoProcessingService;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.domain.service.VideoUploadPolicyService;
+import br.duosilva.tech.solutions.ez.frame.generator.ms.frameworks.exception.BusinessRuleException;
+import br.duosilva.tech.solutions.ez.frame.generator.ms.frameworks.exception.ErrorMessages;
 
 @Component
 public class UploadVideoUseCase {
@@ -21,7 +23,7 @@ public class UploadVideoUseCase {
 	public void processUploadedVideo(MultipartFile[] multipartFiles, String userId) {
 
 		if (multipartFiles == null || multipartFiles.length == 0) {
-			throw new IllegalArgumentException("No video to process.");
+			throw new BusinessRuleException(ErrorMessages.NO_VIDEO_PROVIDED);
 		} else {
 
 			for (MultipartFile file : multipartFiles) {

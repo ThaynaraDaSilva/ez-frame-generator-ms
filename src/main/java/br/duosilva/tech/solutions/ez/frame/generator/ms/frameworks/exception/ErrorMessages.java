@@ -11,6 +11,8 @@ public class ErrorMessages {
 	public static final String MAX_FILES_PER_REQUEST_EXCEEDED = "You can upload up to 3 files per request.";
 
 	public static final String TOTAL_SIZE_EXCEEDED_FREE_PLAN = "The total size of uploaded files exceeds the 100MB limit for the Free plan.";
+	
+	public static final String NO_VIDEO_PROVIDED = "No video to process.";
 
 	private ErrorMessages() {
 

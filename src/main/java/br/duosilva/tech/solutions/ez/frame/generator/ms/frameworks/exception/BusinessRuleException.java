@@ -9,9 +9,4 @@ public class BusinessRuleException extends RuntimeException{
         super(message);
     }
 
-	/*
-	 * public BusinessRuleException(String message, Throwable cause) {
-	 * super(message, cause); }
-	 */
-
 }
