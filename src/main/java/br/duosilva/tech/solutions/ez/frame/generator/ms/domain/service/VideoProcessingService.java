@@ -8,7 +8,7 @@ import br.duosilva.tech.solutions.ez.frame.generator.ms.domain.model.VideoMetada
 @Service
 public class VideoProcessingService {
 
-	public VideoMetadata generateFrames(MultipartFile multipartFiles) {
+	public VideoMetadata generateFrames(MultipartFile multipartFiles, String userId) {
 		
 		
 		

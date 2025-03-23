@@ -13,12 +13,12 @@ public class UploadVideoUseCase {
 	private final VideoUploadPolicyService videoUploadPolicyService;
 
 	public UploadVideoUseCase(VideoProcessingService videoProcessingService,
-			VideoUploadPolicyService uploadPolicyService) {
+			VideoUploadPolicyService videoUploadPolicyService) {
 		this.videoProcessingService = videoProcessingService;
-		this.videoUploadPolicyService = uploadPolicyService;
+		this.videoUploadPolicyService = videoUploadPolicyService;
 	}
 
-	public void processUploadedVideo(MultipartFile[] multipartFiles) {
+	public void processUploadedVideo(MultipartFile[] multipartFiles, String userId) {
 
 		if (multipartFiles == null || multipartFiles.length == 0) {
 			throw new IllegalArgumentException("No video to process.");
@@ -31,11 +31,14 @@ public class UploadVideoUseCase {
 			try {
 
 				for (MultipartFile file : multipartFiles) {
-					if (file.isEmpty()) {
-						throw new IllegalArgumentException("No video to process.");
-					}
+					if (file.isEmpty()) continue;
+					
+					// 1. Validacoes de regras de negocio (plano Free)
+					videoUploadPolicyService.validateFileSize(file);
+					videoUploadPolicyService.validateUserDailyUploadLimit(userId);
 
-					videoProcessingService.generateFrames(file);
+		            // 2. Processamento tecnico do vídeo
+		            videoProcessingService.generateFrames(file, userId);
 				}
 
 			} catch (Exception e) {
