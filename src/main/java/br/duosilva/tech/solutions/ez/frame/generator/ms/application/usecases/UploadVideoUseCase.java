@@ -24,10 +24,6 @@ public class UploadVideoUseCase {
 			throw new IllegalArgumentException("No video to process.");
 		} else {
 
-			System.out.println("################################");
-			System.out.println("PROCESS UPLOADED VIDEO");
-			System.out.println("################################");
-
 			try {
 
 				for (MultipartFile file : multipartFiles) {
@@ -36,6 +32,7 @@ public class UploadVideoUseCase {
 					// 1. Validacoes de regras de negocio (plano Free)
 					videoUploadPolicyService.validateFileSize(file);
 					videoUploadPolicyService.validateUserDailyUploadLimit(userId);
+					
 
 		            // 2. Processamento tecnico do vídeo
 		            videoProcessingService.generateFrames(file, userId);
