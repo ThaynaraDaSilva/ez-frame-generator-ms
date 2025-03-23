@@ -33,13 +33,11 @@ public class FrameGeneratorController {
 		uploadVideoUseCase.processUploadedVideo(multipartFiles, USER_ID);
 		return ResponseEntity.accepted().build(); // 202 - Aceito para processamento assíncrono
 
-		// throw new BusinessRuleException("Erro de negócio simulado.");
-
 	}
 
-	@GetMapping("/test-error")
-	public void testError() {
-		throw new BusinessRuleException("Erro simulado");
-	}
+	/*
+	 * @GetMapping("/test-error") public void testError() { throw new
+	 * BusinessRuleException("Erro simulado"); }
+	 */
 
 }
