@@ -5,6 +5,8 @@
 
 # Pré requisitos
 
+## Limites definidos com relação a upload de videos
+
 # Estrutura de diretórios do projeto
 
 # Modelagem do banco de dados
