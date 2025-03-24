@@ -31,13 +31,7 @@ public class FrameGeneratorController {
 	public ResponseEntity<Void> uploadVideo(@RequestPart("files") MultipartFile[] multipartFiles) {
 
 		uploadVideoUseCase.processUploadedVideo(multipartFiles, USER_ID);
-		return ResponseEntity.accepted().build(); // 202 - Aceito para processamento assíncrono
+		return ResponseEntity.accepted().build();
 
 	}
-
-	/*
-	 * @GetMapping("/test-error") public void testError() { throw new
-	 * BusinessRuleException("Erro simulado"); }
-	 */
-
 }
