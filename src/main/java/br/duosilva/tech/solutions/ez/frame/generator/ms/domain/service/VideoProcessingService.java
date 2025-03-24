@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import br.duosilva.tech.solutions.ez.frame.generator.ms.adapters.out.s3.AmazonS3Adapter;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.frameworks.exception.BusinessRuleException;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.infrastructure.ffmpeg.FFmpegFrameExtractor;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.infrastructure.zip.ZipFileGenerator;
@@ -20,11 +21,13 @@ public class VideoProcessingService {
 
 	private final FFmpegFrameExtractor ffmpegFrameExtractor;
 	private final ZipFileGenerator zipFileGenerator;
+	private final AmazonS3Adapter amazonS3Adapter;
 	private static final Logger LOGGER = LoggerFactory.getLogger(VideoProcessingService.class);
 
-	public VideoProcessingService(FFmpegFrameExtractor ffmpegFrameExtractor, ZipFileGenerator zipFileGenerator) {
+	public VideoProcessingService(FFmpegFrameExtractor ffmpegFrameExtractor, ZipFileGenerator zipFileGenerator,AmazonS3Adapter amazonS3Adapter) {
 		this.ffmpegFrameExtractor = ffmpegFrameExtractor;
 		this.zipFileGenerator = zipFileGenerator;
+		this.amazonS3Adapter = amazonS3Adapter;
 	}
 
 	// Avaliar a trocar para o tipo de retorno de File para VideoMetadata quando
@@ -41,7 +44,7 @@ public class VideoProcessingService {
 	public File generateFrames(MultipartFile multipartFile, String userId) {
 		 long startTime = System.currentTimeMillis();
 		 LOGGER.info("############################################################");
-		 LOGGER.info("#### VIDEO PROCESSING STARTED: {}", multipartFile.getOriginalFilename() + " ####");
+		 LOGGER.info("#### VIDEO PROCESSING STARTED: {} ####", multipartFile.getOriginalFilename());
 
 		try {
 			// 1. Extrair frames e salvar temporariamente
@@ -59,8 +62,18 @@ public class VideoProcessingService {
 			}
 
 			// 5. Deletar diretorio temporario (caso esteja vazio)
-			File frameDirectory = frames.get(0).getParentFile();
-			frameDirectory.delete(); // so funciona se a pasta estiver vazia
+			if (!frames.isEmpty()) {
+	            File frameDirectory = frames.get(0).getParentFile();
+	            frameDirectory.delete();
+	        }
+			// Upload to S3
+            String s3ObjectKey = userId + "/" + zipFile.getName();
+            if (amazonS3Adapter.doesZipExistInS3(s3ObjectKey)) {
+            	LOGGER.warn("#### ZIP ALREADY EXISTS IN S3: {} — SKIPPING UPLOAD ####", s3ObjectKey);
+            } else {
+                amazonS3Adapter.uploadZipToS3(s3ObjectKey, zipFile);
+                LOGGER.info("#### ZIP UPLOADED TO S3: {} ####", s3ObjectKey);
+            }
 
 			return zipFile;
 
@@ -70,8 +83,8 @@ public class VideoProcessingService {
 			 long endTime = System.currentTimeMillis();
 		        long duration = endTime - startTime;
 
-		        LOGGER.info("#### VIDEO PROCESSING COMPLETED: {}", multipartFile.getOriginalFilename()+ " ####");
-		        LOGGER.info("#### TOTAL PROCESSING TIME: {}", formatDuration(duration)+ " ####");
+		        LOGGER.info("#### VIDEO PROCESSING COMPLETED: {} ####", multipartFile.getOriginalFilename());
+		        LOGGER.info("#### TOTAL PROCESSING TIME: {} ####", formatDuration(duration));
 
 		}
 	}
