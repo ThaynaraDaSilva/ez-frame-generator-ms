@@ -14,37 +14,44 @@ import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Java2DFrameConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
-
+import br.duosilva.tech.solutions.ez.frame.generator.ms.domain.policy.VideoUploadPolicy;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.frameworks.exception.BusinessRuleException;
 
 @Component
 public class FFmpegFrameExtractor {
-	
+
 	private static final String TEMP_VIDEO_PREFIX = "uploaded-video";
 	private static final String TEMP_VIDEO_DEFAULT_EXTENSION = ".mp4";
 	private static final String TEMP_FRAME_DIR_PREFIX = "frames-generator-ms";
 	private static final String FRAME_FILE_PREFIX = "frame-";
 	private static final String FRAME_FILE_EXTENSION = "jpg";
 
+	private final VideoUploadPolicy videoUploadPolicy;
+
+	public FFmpegFrameExtractor(VideoUploadPolicy videoUploadPolicy) {
+		this.videoUploadPolicy = videoUploadPolicy;
+
+	}
+
 	public List<File> extractFrames(MultipartFile multipartFile) {
-	    File temporaryVideoFile = null;
+		File temporaryVideoFile = null;
 
-	    try {
-	        // 1. Converter MultipartFile em arquivo físico temporario
-	    	temporaryVideoFile = convertMultipartFileToFile(multipartFile);
+		try {
+			// 1. Converter MultipartFile em arquivo físico temporario
+			temporaryVideoFile = convertMultipartFileToFile(multipartFile);
 
-	        // 2. Criar diretorio temporario para os frames
-	        File frameOutputDirectory = createTemporaryFrameDirectory();
+			// 2. Criar diretorio temporario para os frames
+			File frameOutputDirectory = createTemporaryFrameDirectory();
 
-	        // 3. Extrair os frames do video
-	        return extractFramesFromVideoFile(temporaryVideoFile, frameOutputDirectory);
+			// 3. Extrair os frames do video
+			return extractFramesFromVideoFile(temporaryVideoFile, frameOutputDirectory);
 
-	    } finally {
-	        // 4. Limpar o video temporario do disco
-	        if (temporaryVideoFile != null && temporaryVideoFile.exists()) {
-	        	temporaryVideoFile.delete();
-	        }
-	    }
+		} finally {
+			// 4. Limpar o video temporario do disco
+			if (temporaryVideoFile != null && temporaryVideoFile.exists()) {
+				temporaryVideoFile.delete();
+			}
+		}
 	}
 
 	private File convertMultipartFileToFile(MultipartFile multipartFile) {
@@ -86,13 +93,22 @@ public class FFmpegFrameExtractor {
 			int frameNumber = 0;
 			converter = new Java2DFrameConverter();
 
+			long frameIntervalMs = videoUploadPolicy.getFrameExtractionIntervalInMillis();
+			long nextTargetTimestamp = 0;
+
 			while ((frame = frameGrabber.grabImage()) != null) {
-				BufferedImage bufferedImage = converter.convert(frame);
-				if (bufferedImage != null) {
-					File frameFile = new File(outputDirectory, FRAME_FILE_PREFIX + frameNumber + "." +  FRAME_FILE_EXTENSION);
-					ImageIO.write(bufferedImage, FRAME_FILE_EXTENSION, frameFile);
-					extractedFrames.add(frameFile);
-					frameNumber++;
+
+				long currentTimestamp = frameGrabber.getTimestamp() / 1000;
+				if (currentTimestamp >= nextTargetTimestamp) {
+					BufferedImage bufferedImage = converter.convert(frame);
+					if (bufferedImage != null) {
+						File frameFile = new File(outputDirectory,
+								FRAME_FILE_PREFIX + frameNumber + "." + FRAME_FILE_EXTENSION);
+						ImageIO.write(bufferedImage, FRAME_FILE_EXTENSION, frameFile);
+						extractedFrames.add(frameFile);
+						frameNumber++;
+						nextTargetTimestamp = currentTimestamp + frameIntervalMs;
+					}
 				}
 			}
 		} catch (Exception e) {
