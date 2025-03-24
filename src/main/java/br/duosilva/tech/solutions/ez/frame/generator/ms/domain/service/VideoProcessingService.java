@@ -1,9 +1,13 @@
 package br.duosilva.tech.solutions.ez.frame.generator.ms.domain.service;
 
 import java.io.File;
+import java.time.Duration;
 import java.util.List;
 
+
 import org.apache.commons.io.FilenameUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,6 +20,7 @@ public class VideoProcessingService {
 
 	private final FFmpegFrameExtractor ffmpegFrameExtractor;
 	private final ZipFileGenerator zipFileGenerator;
+	private static final Logger LOGGER = LoggerFactory.getLogger(VideoProcessingService.class);
 
 	public VideoProcessingService(FFmpegFrameExtractor ffmpegFrameExtractor, ZipFileGenerator zipFileGenerator) {
 		this.ffmpegFrameExtractor = ffmpegFrameExtractor;
@@ -34,6 +39,9 @@ public class VideoProcessingService {
 	 * @return Arquivo .zip contendo os frames extraídos
 	 */
 	public File generateFrames(MultipartFile multipartFile, String userId) {
+		 long startTime = System.currentTimeMillis();
+		 LOGGER.info("############################################################");
+		 LOGGER.info("#### VIDEO PROCESSING STARTED: {}", multipartFile.getOriginalFilename() + " ####");
 
 		try {
 			// 1. Extrair frames e salvar temporariamente
@@ -58,6 +66,13 @@ public class VideoProcessingService {
 
 		} catch (Exception e) {
 			throw new BusinessRuleException("Failed to process video and generate frames: " + e.getMessage());
+		}finally {
+			 long endTime = System.currentTimeMillis();
+		        long duration = endTime - startTime;
+
+		        LOGGER.info("#### VIDEO PROCESSING COMPLETED: {}", multipartFile.getOriginalFilename()+ " ####");
+		        LOGGER.info("#### TOTAL PROCESSING TIME: {}", formatDuration(duration)+ " ####");
+
 		}
 	}
 
@@ -70,6 +85,16 @@ public class VideoProcessingService {
 	 */
 	private File compressFrames(List<File> frames, String baseName) {
 		return zipFileGenerator.generateZipFromFrames(frames, baseName);
+	}
+	
+	private String formatDuration(long millis) {
+	    Duration duration = Duration.ofMillis(millis);
+	    long hours = duration.toHours();
+	    long minutes = duration.toMinutesPart();
+	    long seconds = duration.toSecondsPart();
+	    long milliseconds = duration.toMillisPart();
+
+	    return String.format("%02dh %02dm %02ds %03dms", hours, minutes, seconds, milliseconds);
 	}
 
 }
