@@ -36,14 +36,25 @@ public class VideoProcessingService {
 	public File generateFrames(MultipartFile multipartFile, String userId) {
 
 		try {
-			// Extrair frames e salvar temporariamente
+			// 1. Extrair frames e salvar temporariamente
 			List<File> frames = ffmpegFrameExtractor.extractFrames(multipartFile);
 
-			// Gerar baseName do vídeo original
+			// 2.Gerar baseName do vídeo original
 			String baseName = FilenameUtils.getBaseName(multipartFile.getOriginalFilename());
 
-			return compressFrames(frames, baseName);
-		
+			// 3. Gerar o .zip dos frames
+			File zipFile = compressFrames(frames, baseName);
+
+			// 4. Limpar arquivos de frame individuais
+			for (File frame : frames) {
+				frame.delete();
+			}
+
+			// 5. Deletar diretorio temporario (caso esteja vazio)
+			File frameDirectory = frames.get(0).getParentFile();
+			frameDirectory.delete(); // so funciona se a pasta estiver vazia
+
+			return zipFile;
 
 		} catch (Exception e) {
 			throw new BusinessRuleException("Failed to process video and generate frames: " + e.getMessage());
