@@ -60,6 +60,7 @@ public class AmazonS3Config {
         
         String endpoint = amazonProperties.getS3().getEndpoint();
         if (endpoint != null && !endpoint.isBlank()) {
+        	// IMPORTANTE: Evitar virtual-host-style para LocalStack — use 127.0.0.1
             builder.endpointOverride(URI.create(endpoint)); // <-- Isso garante path-style em localhost
         }
 
