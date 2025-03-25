@@ -66,7 +66,7 @@ public class VideoProcessingService {
 	            File frameDirectory = frames.get(0).getParentFile();
 	            frameDirectory.delete();
 	        }
-			// Upload to S3
+			// 6. Upload to S3
             String s3ObjectKey = userId + "/" + zipFile.getName();
             if (amazonS3Adapter.doesZipExistInS3(s3ObjectKey)) {
             	LOGGER.warn("#### ZIP ALREADY EXISTS IN S3: {} — SKIPPING UPLOAD ####", s3ObjectKey);
@@ -74,6 +74,10 @@ public class VideoProcessingService {
                 amazonS3Adapter.uploadZipToS3(s3ObjectKey, zipFile);
                 LOGGER.info("#### ZIP UPLOADED TO S3: {} ####", s3ObjectKey);
             }
+            
+         // 7. Generate presigned URL (15 min) and log it
+            String presignedUrl = amazonS3Adapter.generatePresignedUrl(s3ObjectKey, Duration.ofMinutes(15));
+            LOGGER.info("#### PRESIGNED URL (VALID FOR 15 MINUTES): {} ####", presignedUrl);
 
 			return zipFile;
 
