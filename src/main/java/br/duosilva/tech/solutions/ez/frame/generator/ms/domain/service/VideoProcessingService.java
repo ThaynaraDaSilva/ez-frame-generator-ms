@@ -1,9 +1,7 @@
 package br.duosilva.tech.solutions.ez.frame.generator.ms.domain.service;
 
 import java.io.File;
-import java.time.Duration;
 import java.util.List;
-
 
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
@@ -11,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import br.duosilva.tech.solutions.ez.frame.generator.ms.frameworks.exception.BusinessRuleException;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.infrastructure.ffmpeg.FFmpegFrameExtractor;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.infrastructure.zip.ZipFileGenerator;
 
@@ -38,42 +35,19 @@ public class VideoProcessingService {
 	 * @param userId        ID do usuário
 	 * @return Arquivo .zip contendo os frames extraídos
 	 */
-	public File generateFrames(MultipartFile multipartFile, String userId) {
-		 long startTime = System.currentTimeMillis();
-		 LOGGER.info("############################################################");
-		 LOGGER.info("#### VIDEO PROCESSING STARTED: {}", multipartFile.getOriginalFilename() + " ####");
+	public File generateFrames(MultipartFile multipartFile) {
+		List<File> frames = ffmpegFrameExtractor.extractFrames(multipartFile);
+	    String baseName = FilenameUtils.getBaseName(multipartFile.getOriginalFilename());
+	    File zipFile = compressFrames(frames, baseName);
 
-		try {
-			// 1. Extrair frames e salvar temporariamente
-			List<File> frames = ffmpegFrameExtractor.extractFrames(multipartFile);
+	    // Clean up
+	    frames.forEach(File::delete);
+	    if (!frames.isEmpty()) {
+	        File frameDirectory = frames.get(0).getParentFile();
+	        frameDirectory.delete();
+	    }
 
-			// 2.Gerar baseName do vídeo original
-			String baseName = FilenameUtils.getBaseName(multipartFile.getOriginalFilename());
-
-			// 3. Gerar o .zip dos frames
-			File zipFile = compressFrames(frames, baseName);
-
-			// 4. Limpar arquivos de frame individuais
-			for (File frame : frames) {
-				frame.delete();
-			}
-
-			// 5. Deletar diretorio temporario (caso esteja vazio)
-			File frameDirectory = frames.get(0).getParentFile();
-			frameDirectory.delete(); // so funciona se a pasta estiver vazia
-
-			return zipFile;
-
-		} catch (Exception e) {
-			throw new BusinessRuleException("Failed to process video and generate frames: " + e.getMessage());
-		}finally {
-			 long endTime = System.currentTimeMillis();
-		        long duration = endTime - startTime;
-
-		        LOGGER.info("#### VIDEO PROCESSING COMPLETED: {}", multipartFile.getOriginalFilename()+ " ####");
-		        LOGGER.info("#### TOTAL PROCESSING TIME: {}", formatDuration(duration)+ " ####");
-
-		}
+	    return zipFile;
 	}
 
 	/**
@@ -87,14 +61,4 @@ public class VideoProcessingService {
 		return zipFileGenerator.generateZipFromFrames(frames, baseName);
 	}
 	
-	private String formatDuration(long millis) {
-	    Duration duration = Duration.ofMillis(millis);
-	    long hours = duration.toHours();
-	    long minutes = duration.toMinutesPart();
-	    long seconds = duration.toSecondsPart();
-	    long milliseconds = duration.toMillisPart();
-
-	    return String.format("%02dh %02dm %02ds %03dms", hours, minutes, seconds, milliseconds);
-	}
-
 }
