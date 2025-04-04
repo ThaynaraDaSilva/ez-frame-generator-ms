@@ -1,17 +1,15 @@
 package br.duosilva.tech.solutions.ez.frame.generator.ms.application.usecases;
 
-import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.File;
 import java.time.Duration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import br.duosilva.tech.solutions.ez.frame.generator.ms.adapters.out.s3.AmazonS3Adapter;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.domain.service.VideoProcessingService;
-import br.duosilva.tech.solutions.ez.frame.generator.ms.domain.service.VideoUploadPolicyService;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.frameworks.exception.BusinessRuleException;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.frameworks.exception.ErrorMessages;
 
@@ -27,13 +25,10 @@ public class UploadVideoUseCase {
 	private static final Logger LOGGER = LoggerFactory.getLogger(UploadVideoUseCase.class);
 
 	private final VideoProcessingService videoProcessingService;
-	private final VideoUploadPolicyService videoUploadPolicyService;
 	private final AmazonS3Adapter amazonS3Adapter;
 
-	public UploadVideoUseCase(VideoProcessingService videoProcessingService,
-			VideoUploadPolicyService videoUploadPolicyService, AmazonS3Adapter amazonS3Adapter) {
+	public UploadVideoUseCase(VideoProcessingService videoProcessingService, AmazonS3Adapter amazonS3Adapter) {
 		this.videoProcessingService = videoProcessingService;
-		this.videoUploadPolicyService = videoUploadPolicyService;
 		this.amazonS3Adapter = amazonS3Adapter;
 	}
 
@@ -50,8 +45,6 @@ public class UploadVideoUseCase {
 	public void processUploadedVideo(MultipartFile[] multipartFiles, String userId) {
 
 		this.validateFilesPresence(multipartFiles);
-
-		videoUploadPolicyService.validateUserDailyUploadLimit(userId);
 
 		for (MultipartFile file : multipartFiles) {
 			if (file.isEmpty())
@@ -72,8 +65,6 @@ public class UploadVideoUseCase {
 		long startTime = System.currentTimeMillis();
 		LOGGER.info("############################################################");
 		LOGGER.info("#### VIDEO PROCESSING STARTED: {} ####", file.getOriginalFilename());
-
-		videoUploadPolicyService.validateFileSize(file);
 
 		try {
 			File zipFile = videoProcessingService.generateFrames(file);
