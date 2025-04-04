@@ -8,8 +8,10 @@ import org.springframework.context.annotation.Configuration;
 public class AmazonProperties {
 
 	private String region;
-    private Credentials credentials;
-    private S3 s3;
+	private Credentials credentials;
+	private S3 s3;
+	private Sqs sqs;
+	private DynamoDb dynamodb;
 
 	public static class Credentials {
 		private String accessKey;
@@ -55,6 +57,56 @@ public class AmazonProperties {
 
 	}
 
+	public static class Sqs {
+		private String queueName;
+		private String resultQueueName;
+		private String endpoint;
+
+		public String getQueueName() {
+			return queueName;
+		}
+
+		public void setQueueName(String queueName) {
+			this.queueName = queueName;
+		}
+
+		public String getResultQueueName() {
+			return resultQueueName;
+		}
+
+		public void setResultQueueName(String resultQueueName) {
+			this.resultQueueName = resultQueueName;
+		}
+
+		public String getEndpoint() {
+			return endpoint;
+		}
+
+		public void setEndpoint(String endpoint) {
+			this.endpoint = endpoint;
+		}
+	}
+
+	public static class DynamoDb {
+		private String tableName;
+		private String endpoint;
+		
+		public String getTableName() {
+			return tableName;
+		}
+		public void setTableName(String tableName) {
+			this.tableName = tableName;
+		}
+		public String getEndpoint() {
+			return endpoint;
+		}
+		public void setEndpoint(String endpoint) {
+			this.endpoint = endpoint;
+		}
+		
+		
+	}
+
 	public String getRegion() {
 		return region;
 	}
@@ -78,7 +130,21 @@ public class AmazonProperties {
 	public void setS3(S3 s3) {
 		this.s3 = s3;
 	}
-	
-	
 
+	public Sqs getSqs() {
+		return sqs;
+	}
+
+	public void setSqs(Sqs sqs) {
+		this.sqs = sqs;
+	}
+
+	public DynamoDb getDynamodb() {
+		return dynamodb;
+	}
+
+	public void setDynamodb(DynamoDb dynamodb) {
+		this.dynamodb = dynamodb;
+	}
+	
 }
