@@ -49,8 +49,11 @@ public class FrameGeneratorUseCase {
 	    File tempVideoFile = null;
 
 	    try {
-	        // 1. Baixar vídeo do S3 como InputStream
+	        // 1. Baixar video do S3 como InputStream
+	        LOGGER.info("############################################################");
+		    LOGGER.info("#### BUCKET NAME: {} ####", bucket);
 	        InputStream videoStream = amazonS3Adapter.downloadVideo(bucket, key);
+	        LOGGER.info("############################################################");
 
 	        // 2. Salvar vídeo como arquivo temporário
 	        tempVideoFile = File.createTempFile("video-", ".mp4");
