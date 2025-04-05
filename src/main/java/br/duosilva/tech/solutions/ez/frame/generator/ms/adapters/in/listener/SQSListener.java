@@ -2,6 +2,8 @@ package br.duosilva.tech.solutions.ez.frame.generator.ms.adapters.in.listener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -15,6 +17,7 @@ import software.amazon.awssdk.services.sqs.model.Message;
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest;
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageResponse;
 
+@Component
 public class SQSListener {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SQSListener.class);
@@ -40,6 +43,7 @@ public class SQSListener {
 
 	}
 
+	@Scheduled(fixedDelay = 120000)  // 5000 Runs every 5 seconds
 	public void pollMessagesFromQueue() {
 		// Fetch up to 5 messages at a time
 		ReceiveMessageRequest request = ReceiveMessageRequest.builder().queueUrl(obtainSQSUrl()).maxNumberOfMessages(5) // time

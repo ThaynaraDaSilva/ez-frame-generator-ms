@@ -10,37 +10,49 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.SqsClientBuilder;
+import software.amazon.awssdk.services.sqs.SqsAsyncClient;
+import software.amazon.awssdk.services.sqs.SqsAsyncClientBuilder;
 
 @Configuration
 public class AmazonSQSConfig {
-	
-	 private final AmazonProperties amazonProperties;
 
-	    public AmazonSQSConfig(AmazonProperties amazonProperties) {
-	        this.amazonProperties = amazonProperties;
-	       
-	    }
-	    
-	    @Bean
-	    public SqsClient sqsClient() {
-	        SqsClientBuilder builder = SqsClient.builder()
-	            .region(Region.of(amazonProperties.getRegion()))
-	            .credentialsProvider(
-	                StaticCredentialsProvider.create(
-	                    AwsBasicCredentials.create(
-	                        amazonProperties.getCredentials().getAccessKey(),
-	                        amazonProperties.getCredentials().getSecretKey()
-	                    )
-	                )
-	            );
+	private final AmazonProperties amazonProperties;
 
-	        String endpoint = amazonProperties.getSqs().getEndpoint();
+	public AmazonSQSConfig(AmazonProperties amazonProperties) {
+		this.amazonProperties = amazonProperties;
 
-	        if (endpoint != null && !endpoint.isBlank()) {
-	            builder.endpointOverride(URI.create(endpoint));
-	        }
+	}
 
-	        return builder.build();
-	    }
+	@Bean
+	public SqsClient sqsClient() {
+		SqsClientBuilder builder = SqsClient.builder().region(Region.of(amazonProperties.getRegion()))
+				.credentialsProvider(StaticCredentialsProvider
+						.create(AwsBasicCredentials.create(amazonProperties.getCredentials().getAccessKey(),
+								amazonProperties.getCredentials().getSecretKey())));
+
+		String endpoint = amazonProperties.getSqs().getEndpoint();
+
+		if (endpoint != null && !endpoint.isBlank()) {
+			builder.endpointOverride(URI.create(endpoint));
+		}
+
+		return builder.build();
+	}
+
+	@Bean
+	public SqsAsyncClient sqsAsyncClient() {
+		SqsAsyncClientBuilder builder = SqsAsyncClient.builder().region(Region.of(amazonProperties.getRegion()))
+				.credentialsProvider(StaticCredentialsProvider
+						.create(AwsBasicCredentials.create(amazonProperties.getCredentials().getAccessKey(),
+								amazonProperties.getCredentials().getSecretKey())));
+
+		String endpoint = amazonProperties.getSqs().getEndpoint();
+
+		if (endpoint != null && !endpoint.isBlank()) {
+			builder.endpointOverride(URI.create(endpoint));
+		}
+
+		return builder.build();
+	}
 
 }
