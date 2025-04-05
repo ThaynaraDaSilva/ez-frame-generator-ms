@@ -37,13 +37,22 @@ public class SQSListener {
 	}
 
 	private String obtainSQSUrl() {
+		LOGGER.info("############################################################");
+		 String queueName = amazonProperties.getSqs().getQueueName();
+		    String queueUrl = sqsAsyncClient
+		        .getQueueUrl(GetQueueUrlRequest.builder().queueName(queueName).build())
+		        .join()
+		        .queueUrl();
+
+		    LOGGER.info("#### QUEUE URL: {} ####", queueUrl);
+		
 		return sqsAsyncClient
 				.getQueueUrl(GetQueueUrlRequest.builder().queueName(amazonProperties.getSqs().getQueueName()).build())
 				.join().queueUrl(); // forca esperar o resultado
 
 	}
 
-	@Scheduled(fixedDelay = 120000)  // 5000 Runs every 5 seconds
+	@Scheduled(fixedDelay = 12000)  // 5000 Runs every 5 seconds
 	public void pollMessagesFromQueue() {
 		// Fetch up to 5 messages at a time
 		ReceiveMessageRequest request = ReceiveMessageRequest.builder().queueUrl(obtainSQSUrl()).maxNumberOfMessages(5) // time
@@ -53,7 +62,7 @@ public class SQSListener {
 
 		if (response.messages().isEmpty()) {
 			LOGGER.info("############################################################");
-			LOGGER.info("#### NO MESSAGES: {} ####");
+			LOGGER.info("#### NO MESSAGES ####");
 		} else {
 			for (Message message : response.messages()) {
 				retrieveVideoData(message.body(), message.receiptHandle());
@@ -84,6 +93,8 @@ public class SQSListener {
 				.receiptHandle(receiptHandle).build();
 
 		sqsAsyncClient.deleteMessage(deleteMessageRequest);
+		LOGGER.info("############################################################");
+		LOGGER.info("#### MESSAGE DELETED: {} ####", deleteMessageRequest);
 	}
 
 }

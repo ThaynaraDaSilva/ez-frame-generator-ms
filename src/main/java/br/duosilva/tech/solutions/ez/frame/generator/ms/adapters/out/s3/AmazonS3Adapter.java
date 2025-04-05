@@ -4,8 +4,12 @@ import java.io.File;
 import java.io.InputStream;
 import java.time.Duration;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import br.duosilva.tech.solutions.ez.frame.generator.ms.application.usecases.FrameGeneratorUseCase;
+import br.duosilva.tech.solutions.ez.frame.generator.ms.frameworks.exception.BusinessRuleException;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.infrastructure.config.AmazonProperties;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -19,6 +23,9 @@ import software.amazon.awssdk.core.ResponseInputStream;
 
 @Component
 public class AmazonS3Adapter {
+	
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(AmazonS3Adapter.class);
 
 	private final S3Client s3Client;
 	private final AmazonProperties properties;
@@ -59,6 +66,10 @@ public class AmazonS3Adapter {
 	}
 	
 	public InputStream downloadVideo(String bucketName, String objectKey) {
+		
+		 LOGGER.info("############################################################");
+		 LOGGER.info("#### STARTING DOWNLOAD PROCESS: {}/{} ####", bucketName, objectKey);
+
 	    GetObjectRequest request = GetObjectRequest.builder()
 	            .bucket(bucketName)
 	            .key(objectKey)
@@ -68,7 +79,7 @@ public class AmazonS3Adapter {
 	        ResponseInputStream<GetObjectResponse> inputStream = s3Client.getObject(request);
 	        return inputStream;
 	    } catch (Exception e) {
-	        throw new RuntimeException("Failed to download file from S3: " + bucketName + "/" + objectKey, e);
+	    	throw new BusinessRuleException("FAILED TO DOWNLOAD S3 OBJECT: " + bucketName + "/" + objectKey, e);
 	    }
 	}
 

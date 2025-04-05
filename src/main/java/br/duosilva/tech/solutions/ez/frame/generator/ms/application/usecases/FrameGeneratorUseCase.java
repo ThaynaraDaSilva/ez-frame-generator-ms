@@ -16,6 +16,7 @@ import br.duosilva.tech.solutions.ez.frame.generator.ms.application.dto.VideoDat
 import br.duosilva.tech.solutions.ez.frame.generator.ms.domain.service.VideoProcessingService;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.frameworks.exception.BusinessRuleException;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.frameworks.exception.ErrorMessages;
+import br.duosilva.tech.solutions.ez.frame.generator.ms.infrastructure.S3.S3KeyGenerator;
 
 /**
  * Use case responsável por orquestrar o processo de upload e processamento de
@@ -27,6 +28,8 @@ import br.duosilva.tech.solutions.ez.frame.generator.ms.frameworks.exception.Err
 public class FrameGeneratorUseCase {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(FrameGeneratorUseCase.class);
+	private static final Duration PRESIGNED_URL_DURATION = Duration.ofMinutes(15);
+
 
 	private final VideoProcessingService videoProcessingService;
 	private final AmazonS3Adapter amazonS3Adapter;
@@ -46,18 +49,23 @@ public class FrameGeneratorUseCase {
 
 	    try {
 	        // 1. Baixar video do S3 como InputStream
-	        LOGGER.info("############################################################");
-		    LOGGER.info("#### BUCKET NAME: {} ####", videoDataResponseDTO.getS3BucketName());
+	    
 	        InputStream videoStream = amazonS3Adapter.downloadVideo(videoDataResponseDTO.getS3BucketName(), videoDataResponseDTO.getS3Key());
-	        LOGGER.info("############################################################");
+	    
+	        
+	        String s3ObjectKey = S3KeyGenerator.generateZipKey(
+	        	    videoDataResponseDTO.getUserId(),
+	        	    videoDataResponseDTO.getVideoId(),
+	        	    videoDataResponseDTO.getOriginalFileName()
+	        	);
 
 	        // 2. Salvar vídeo como arquivo temporário
-	        tempVideoFile = File.createTempFile("video-", ".mp4");
+	        tempVideoFile = File.createTempFile(s3ObjectKey, ".mp4");
 	        Files.copy(videoStream, tempVideoFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
 	        // 3. Gerar frames e criar ZIP
 	        File zipFile = videoProcessingService.generateVideoFrames(tempVideoFile);
-	        String s3ObjectKey = videoDataResponseDTO.getUserId() + "/" + zipFile.getName();
+	      
 
 	        // 4. Fazer upload do ZIP (se não existir)
 	        if (amazonS3Adapter.doesZipExistInS3(s3ObjectKey)) {
@@ -68,11 +76,11 @@ public class FrameGeneratorUseCase {
 	        }
 
 	        // 5. Gerar URL temporária para download
-	        String presignedUrl = amazonS3Adapter.generatePresignedUrl(s3ObjectKey, Duration.ofMinutes(15));
+	        String presignedUrl = amazonS3Adapter.generatePresignedUrl(s3ObjectKey, PRESIGNED_URL_DURATION);
 	        LOGGER.info("#### PRESIGNED URL (VALID FOR 15 MINUTES): {} ####", presignedUrl);
 
 	    } catch (Exception e) {
-	        throw new BusinessRuleException("FAILED TO PROCESS VIDEO:  " + e);
+	    	throw new BusinessRuleException("FAILED TO PROCESS VIDEO", e);
 	    } finally {
 	        if (tempVideoFile != null && tempVideoFile.exists()) {
 	            tempVideoFile.delete();

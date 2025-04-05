@@ -41,18 +41,23 @@ public class AmazonSQSConfig {
 
 	@Bean
 	public SqsAsyncClient sqsAsyncClient() {
-		SqsAsyncClientBuilder builder = SqsAsyncClient.builder().region(Region.of(amazonProperties.getRegion()))
-				.credentialsProvider(StaticCredentialsProvider
-						.create(AwsBasicCredentials.create(amazonProperties.getCredentials().getAccessKey(),
-								amazonProperties.getCredentials().getSecretKey())));
+		 SqsAsyncClientBuilder builder = SqsAsyncClient.builder()
+		            .region(Region.of(amazonProperties.getRegion()))
+		            .credentialsProvider(
+		                StaticCredentialsProvider.create(
+		                    AwsBasicCredentials.create(
+		                        amazonProperties.getCredentials().getAccessKey(),
+		                        amazonProperties.getCredentials().getSecretKey()
+		                    )
+		                )
+		            );
 
-		String endpoint = amazonProperties.getSqs().getEndpoint();
+		    String endpoint = amazonProperties.getSqs().getEndpoint();
+		    if (endpoint != null && !endpoint.isBlank()) {
+		        builder.endpointOverride(URI.create(endpoint));
+		    }
 
-		if (endpoint != null && !endpoint.isBlank()) {
-			builder.endpointOverride(URI.create(endpoint));
-		}
-
-		return builder.build();
+		    return builder.build();
 	}
 
 }
