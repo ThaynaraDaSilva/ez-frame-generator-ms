@@ -27,6 +27,16 @@ public class FFmpegFrameExtractor {
 	private static final String FRAME_FILE_EXTENSION = "jpg";
 	private static final long FRAME_INTERVAL_MS = 1000; // REMOVER POSTERIORMENTE
 
+	
+	public List<File> extractFramesFromVideo(File videoFile) {
+	    // 1. Criar diretório temporário para os frames
+	    File frameOutputDirectory = createTemporaryFrameDirectory();
+
+	    // 2. Extrair os frames diretamente do arquivo físico
+	    return extractFramesFromVideoFile(videoFile, frameOutputDirectory);
+	}
+
+	
 	public List<File> extractFrames(MultipartFile multipartFile) {
 		File temporaryVideoFile = null;
 
@@ -47,6 +57,7 @@ public class FFmpegFrameExtractor {
 			}
 		}
 	}
+
 
 	private File convertMultipartFileToFile(MultipartFile multipartFile) {
 		try {

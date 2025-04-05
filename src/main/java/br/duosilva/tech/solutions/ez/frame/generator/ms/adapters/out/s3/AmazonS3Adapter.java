@@ -1,6 +1,7 @@
 package br.duosilva.tech.solutions.ez.frame.generator.ms.adapters.out.s3;
 
 import java.io.File;
+import java.io.InputStream;
 import java.time.Duration;
 
 import org.springframework.stereotype.Component;
@@ -13,6 +14,8 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.core.ResponseInputStream;
 
 @Component
 public class AmazonS3Adapter {
@@ -53,6 +56,20 @@ public class AmazonS3Adapter {
 		PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
 
 		return presignedRequest.url().toString();
+	}
+	
+	public InputStream downloadVideo(String bucketName, String objectKey) {
+	    GetObjectRequest request = GetObjectRequest.builder()
+	            .bucket(bucketName)
+	            .key(objectKey)
+	            .build();
+
+	    try {
+	        ResponseInputStream<GetObjectResponse> inputStream = s3Client.getObject(request);
+	        return inputStream;
+	    } catch (Exception e) {
+	        throw new RuntimeException("Failed to download file from S3: " + bucketName + "/" + objectKey, e);
+	    }
 	}
 
 	/**

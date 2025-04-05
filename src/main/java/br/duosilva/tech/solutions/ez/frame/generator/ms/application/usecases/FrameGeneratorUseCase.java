@@ -1,6 +1,9 @@
 package br.duosilva.tech.solutions.ez.frame.generator.ms.application.usecases;
 
 import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 
 import org.slf4j.Logger;
@@ -32,11 +35,56 @@ public class FrameGeneratorUseCase {
 		this.videoProcessingService = videoProcessingService;
 		this.amazonS3Adapter = amazonS3Adapter;
 	}
-	
-	
-	public void retrieveVideoFromBucket(VideoDataResponseDTO videoDataResponseDTO) {
-		System.out.println("retrieve video from bucket");
+
+	public void retrieveAndProcessBucketVideo(VideoDataResponseDTO videoDataResponseDTO) {
+	    long startTime = System.currentTimeMillis();
+	    String originalFileName = videoDataResponseDTO.getOriginalFileName();
+	    String userId = videoDataResponseDTO.getUserId();
+	    String bucket = videoDataResponseDTO.getS3Bucket();
+	    String key = videoDataResponseDTO.getS3Key();
+
+	    LOGGER.info("############################################################");
+	    LOGGER.info("#### VIDEO PROCESSING STARTED: {} ####", originalFileName);
+
+	    File tempVideoFile = null;
+
+	    try {
+	        // 1. Baixar vídeo do S3 como InputStream
+	        InputStream videoStream = amazonS3Adapter.downloadVideo(bucket, key);
+
+	        // 2. Salvar vídeo como arquivo temporário
+	        tempVideoFile = File.createTempFile("video-", ".mp4");
+	        Files.copy(videoStream, tempVideoFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+	        // 3. Gerar frames e criar ZIP
+	        File zipFile = videoProcessingService.generateVideoFrames(tempVideoFile);
+	        String s3ObjectKey = userId + "/" + zipFile.getName();
+
+	        // 4. Fazer upload do ZIP (se não existir)
+	        if (amazonS3Adapter.doesZipExistInS3(s3ObjectKey)) {
+	            LOGGER.warn("#### ZIP ALREADY EXISTS IN S3: {} — SKIPPING UPLOAD ####", s3ObjectKey);
+	        } else {
+	            amazonS3Adapter.uploadZipToS3(s3ObjectKey, zipFile);
+	            LOGGER.info("#### ZIP UPLOADED TO S3: {} ####", s3ObjectKey);
+	        }
+
+	        // 5. Gerar URL temporária para download
+	        String presignedUrl = amazonS3Adapter.generatePresignedUrl(s3ObjectKey, Duration.ofMinutes(15));
+	        LOGGER.info("#### PRESIGNED URL (VALID FOR 15 MINUTES): {} ####", presignedUrl);
+
+	    } catch (Exception e) {
+	        throw new BusinessRuleException("FAILED TO PROCESS VIDEO:  " + e);
+	    } finally {
+	        if (tempVideoFile != null && tempVideoFile.exists()) {
+	            tempVideoFile.delete();
+	        }
+
+	        long duration = System.currentTimeMillis() - startTime;
+	        LOGGER.info("#### VIDEO PROCESSING COMPLETED: {} ####", originalFileName);
+	        LOGGER.info("#### TOTAL PROCESSING TIME: {} ####", formatDuration(duration));
+	    }
 	}
+
 
 	/**
 	 * Processa o upload de um ou mais vídeos enviados pelo usuário. Aplica as

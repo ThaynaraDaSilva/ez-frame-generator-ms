@@ -62,7 +62,7 @@ public class SQSListener {
 			VideoDataResponseDTO videoDataResponse = objectMapper.readValue(message, VideoDataResponseDTO.class);
 
 			// retrieve video
-			frameGeneratorUseCase.retrieveVideoFromBucket(videoDataResponse);
+			frameGeneratorUseCase.retrieveAndProcessBucketVideo(videoDataResponse);
 			LOGGER.info("############################################################");
 			LOGGER.info("RETRIEVE VIDEO FROM BUCKET COMPLETED");
 
