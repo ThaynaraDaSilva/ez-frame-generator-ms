@@ -52,7 +52,8 @@ public class SQSListener {
 		ReceiveMessageResponse response = sqsAsyncClient.receiveMessage(request).join();
 
 		if (response.messages().isEmpty()) {
-			System.out.println("No new messages found.");
+			LOGGER.info("############################################################");
+			LOGGER.info("#### NO MESSAGES: {} ####");
 		} else {
 			for (Message message : response.messages()) {
 				retrieveVideoData(message.body(), message.receiptHandle());

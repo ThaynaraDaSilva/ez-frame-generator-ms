@@ -1,13 +1,26 @@
 package br.duosilva.tech.solutions.ez.frame.generator.ms.application.dto;
 
 public class VideoDataResponseDTO {
-	
+
 	private String videoId;
 	private String originalFileName;
-	private String s3Bucket;
+	private String s3BucketName;
 	private String s3Key;
 	private String uploadTimestamp;
 	private String userId;
+	private String userEmai;
+
+	public VideoDataResponseDTO(String videoId, String originalFileName, String s3BucketName, String s3Key,
+			String uploadTimestamp, String userId, String userEmai) {
+		super();
+		this.videoId = videoId;
+		this.originalFileName = originalFileName;
+		this.s3BucketName = s3BucketName;
+		this.s3Key = s3Key;
+		this.uploadTimestamp = uploadTimestamp;
+		this.userId = userId;
+		this.userEmai = userEmai;
+	}
 
 	public String getVideoId() {
 		return videoId;
@@ -25,12 +38,12 @@ public class VideoDataResponseDTO {
 		this.originalFileName = originalFileName;
 	}
 
-	public String getS3Bucket() {
-		return s3Bucket;
+	public String getS3BucketName() {
+		return s3BucketName;
 	}
 
-	public void setS3Bucket(String s3Bucket) {
-		this.s3Bucket = s3Bucket;
+	public void setS3BucketName(String s3BucketName) {
+		this.s3BucketName = s3BucketName;
 	}
 
 	public String getS3Key() {
@@ -57,12 +70,19 @@ public class VideoDataResponseDTO {
 		this.userId = userId;
 	}
 
-	@Override
-	public String toString() {
-		return "VideoIngestionMessage{" + "videoId='" + videoId + '\'' + ", originalFileName='" + originalFileName
-				+ '\'' + ", s3Bucket='" + s3Bucket + '\'' + ", s3Key='" + s3Key + '\'' + ", uploadTimestamp='"
-				+ uploadTimestamp + '\'' + ", userId='" + userId + '\'' + '}';
+	public String getUserEmai() {
+		return userEmai;
 	}
 
+	public void setUserEmai(String userEmai) {
+		this.userEmai = userEmai;
+	}
+
+	@Override
+	public String toString() {
+		return "VideoDataResponseDTO [videoId=" + videoId + ", originalFileName=" + originalFileName + ", s3BucketName="
+				+ s3BucketName + ", s3Key=" + s3Key + ", uploadTimestamp=" + uploadTimestamp + ", userId=" + userId
+				+ ", userEmai=" + userEmai + "]";
+	}
 
 }
