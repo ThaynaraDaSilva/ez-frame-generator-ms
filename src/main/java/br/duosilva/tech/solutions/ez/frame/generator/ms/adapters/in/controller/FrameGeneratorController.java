@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import br.duosilva.tech.solutions.ez.frame.generator.ms.application.usecases.UploadVideoUseCase;
+import br.duosilva.tech.solutions.ez.frame.generator.ms.application.usecases.FrameGeneratorUseCase;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController()
@@ -18,9 +18,9 @@ public class FrameGeneratorController {
 
 	private static final String USER_ID = "6c0dc669-a18e-40d1-93ea-ba328a8daaed";
 
-	private UploadVideoUseCase uploadVideoUseCase;
+	private FrameGeneratorUseCase uploadVideoUseCase;
 
-	public FrameGeneratorController(UploadVideoUseCase uploadVideoUseCase) {
+	public FrameGeneratorController(FrameGeneratorUseCase uploadVideoUseCase) {
 		super();
 		this.uploadVideoUseCase = uploadVideoUseCase;
 	}
