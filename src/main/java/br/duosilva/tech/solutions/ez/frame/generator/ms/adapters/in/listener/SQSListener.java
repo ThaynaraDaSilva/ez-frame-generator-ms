@@ -37,15 +37,6 @@ public class SQSListener {
 	}
 
 	private String obtainSQSUrl() {
-		LOGGER.info("############################################################");
-		 String queueName = amazonProperties.getSqs().getQueueName();
-		    String queueUrl = sqsAsyncClient
-		        .getQueueUrl(GetQueueUrlRequest.builder().queueName(queueName).build())
-		        .join()
-		        .queueUrl();
-
-		    LOGGER.info("#### QUEUE URL: {} ####", queueUrl);
-		
 		return sqsAsyncClient
 				.getQueueUrl(GetQueueUrlRequest.builder().queueName(amazonProperties.getSqs().getQueueName()).build())
 				.join().queueUrl(); // forca esperar o resultado
@@ -61,7 +52,6 @@ public class SQSListener {
 		ReceiveMessageResponse response = sqsAsyncClient.receiveMessage(request).join();
 
 		if (response.messages().isEmpty()) {
-			LOGGER.info("############################################################");
 			LOGGER.info("#### NO MESSAGES ####");
 		} else {
 			for (Message message : response.messages()) {
@@ -77,8 +67,8 @@ public class SQSListener {
 
 			// retrieve video
 			frameGeneratorUseCase.retrieveAndProcessBucketVideo(videoDataResponse);
-			LOGGER.info("############################################################");
-			LOGGER.info("RETRIEVE VIDEO FROM BUCKET COMPLETED");
+	
+			LOGGER.info("#### RETRIEVE VIDEO FROM BUCKET COMPLETED ####");
 
 			// Delete the message from the queue
 			deleteMessage(receiptHandle);
@@ -93,8 +83,8 @@ public class SQSListener {
 				.receiptHandle(receiptHandle).build();
 
 		sqsAsyncClient.deleteMessage(deleteMessageRequest);
-		LOGGER.info("############################################################");
 		LOGGER.info("#### MESSAGE DELETED: {} ####", deleteMessageRequest);
+		LOGGER.info("############################################################");
 	}
 
 }

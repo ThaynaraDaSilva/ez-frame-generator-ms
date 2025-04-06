@@ -23,8 +23,7 @@ import software.amazon.awssdk.core.ResponseInputStream;
 
 @Component
 public class AmazonS3Adapter {
-	
-	
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(AmazonS3Adapter.class);
 
 	private final S3Client s3Client;
@@ -64,23 +63,18 @@ public class AmazonS3Adapter {
 
 		return presignedRequest.url().toString();
 	}
-	
+
 	public InputStream downloadVideo(String bucketName, String objectKey) {
-		
-		 LOGGER.info("############################################################");
-		 LOGGER.info("#### STARTING DOWNLOAD PROCESS: {}/{} ####", bucketName, objectKey);
+		LOGGER.info("#### STARTING DOWNLOAD PROCESS: {}/{} ####", bucketName, objectKey);
 
-	    GetObjectRequest request = GetObjectRequest.builder()
-	            .bucket(bucketName)
-	            .key(objectKey)
-	            .build();
+		GetObjectRequest request = GetObjectRequest.builder().bucket(bucketName).key(objectKey).build();
 
-	    try {
-	        ResponseInputStream<GetObjectResponse> inputStream = s3Client.getObject(request);
-	        return inputStream;
-	    } catch (Exception e) {
-	    	throw new BusinessRuleException("FAILED TO DOWNLOAD S3 OBJECT: " + bucketName + "/" + objectKey, e);
-	    }
+		try {
+			ResponseInputStream<GetObjectResponse> inputStream = s3Client.getObject(request);
+			return inputStream;
+		} catch (Exception e) {
+			throw new BusinessRuleException("FAILED TO DOWNLOAD S3 OBJECT: " + bucketName + "/" + objectKey, e);
+		}
 	}
 
 	/**
