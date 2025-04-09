@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import br.duosilva.tech.solutions.ez.frame.generator.ms.application.dto.VideoDataResponseDTO;
+import br.duosilva.tech.solutions.ez.frame.generator.ms.application.dto.VideoDataResponseDto;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.application.usecases.FrameGeneratorUseCase;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.infrastructure.config.AmazonProperties;
 import software.amazon.awssdk.services.sqs.SqsAsyncClient;
@@ -63,7 +63,7 @@ public class SQSListener {
 	private void retrieveVideoData(String message, String receiptHandle) {
 		try {
 
-			VideoDataResponseDTO videoDataResponse = objectMapper.readValue(message, VideoDataResponseDTO.class);
+			VideoDataResponseDto videoDataResponse = objectMapper.readValue(message, VideoDataResponseDto.class);
 
 			// retrieve video
 			frameGeneratorUseCase.retrieveAndProcessBucketVideo(videoDataResponse);
