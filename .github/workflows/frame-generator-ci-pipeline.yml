@@ -1,4 +1,5 @@
 name: Frame Generator MS CI Pipeline
+
 on:
   push:
     branches:
@@ -11,7 +12,7 @@ env:
   #SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   #EKS_CLUSTER_NAME: 'ez-frame-generator-cluster-dev'
   JAVA_VERSION: '21'
-  DOCKER_IMAGE_NAME: 'dasilvathaynara/${{ github.repository }}'
+  DOCKER_IMAGE_NAME: 'dasilvathaynara/ez-frame-generator-ms'
   DOCKER_TAG_LATEST: 'latest'
   DOCKER_TAG_COMMIT: ${{ github.sha }}
 
