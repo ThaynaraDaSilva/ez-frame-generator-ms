@@ -1,0 +1,142 @@
+name: Frame Generator MS CI Pipeline
+on:
+  push:
+    branches:
+      - develop
+      - main
+      - feature/create-ci-pipeline
+env:
+  
+  #SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+  #SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  #EKS_CLUSTER_NAME: 'ez-frame-generator-cluster-dev'
+  JAVA_VERSION: '21'
+  DOCKER_IMAGE_NAME: 'dasilvathaynara/${{ github.repository }}'
+  DOCKER_TAG_LATEST: 'latest'
+  DOCKER_TAG_COMMIT: ${{ github.sha }}
+
+jobs:
+  setup-environment-tools:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+  build-and-test:
+    needs: setup-environment-tools
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Build and Run Tests
+        run: mvn clean verify
+
+      - name: Generate Test Report
+        run: mvn surefire-report:report-only
+
+      - name: Show Test Results in Logs
+        if: always()
+        run: cat target/surefire-reports/*.txt || echo "No test results found"
+
+      - name: Upload Test Report as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: target/surefire-reports
+
+  #static-code-analysis:
+  #  needs: build-and-test
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #    - name: Checkout repository
+  #      uses: actions/checkout@v3
+  #
+  #    - name: Run SonarQube Scan
+  #      run: mvn clean verify sonar:sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+  #
+  #    - name: Wait for SonarCloud Processing
+  #      run: sleep 10
+  #
+  #    - name: Check SonarQube Quality Gate Status
+  #      run: |
+  #        response=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/qualitygates/project_status?projectKey=${{ secrets.SONAR_PROJECT_KEY }}")
+  #        status=$(echo "$response" | jq -r '.projectStatus.status')
+  #
+  #        echo "Quality Gate Status: $status"
+  #
+  #        if [[ "$status" != "OK" ]]; then
+  #          echo "❌ Quality Gate failed!"
+  #          exit 1
+  #        fi
+  #
+  #    - name: ✅ SonarQube Passed
+  #      run: echo "🎉 Quality Gate Passed."
+  #
+  docker-build-push:
+    needs:
+      - build-and-test
+      #- static-code-analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+  
+      - name: Set up Docker Build
+        uses: docker/setup-buildx-action@v3
+  
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+  
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_TAG_LATEST }}
+            ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_TAG_COMMIT }}
+  
+  #deploy-to-eks:
+  #  needs: docker-build-push
+  #  runs-on: ubuntu-latest
+  #  if: contains('refs/heads/develop', github.ref) || contains('refs/heads/main', github.ref)
+  #  steps:
+  #    - name: Checkout repository
+  #      uses: actions/checkout@v3
+  #
+  #    - name: Configure AWS credentials
+  #      uses: aws-actions/configure-aws-credentials@v2
+  #      with:
+  #        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #        aws-region: us-east-1
+  #
+  #    - name: Install kubectl
+  #      run: |
+  #        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+  #        chmod +x kubectl
+  #        sudo mv kubectl /usr/local/bin/
+  #
+  #    - name: Update kubeconfig for EKS
+  #      run: aws eks update-kubeconfig --region us-east-1 --name ${{ env.EKS_CLUSTER_NAME }}
+  #
+  #    - name: Apply Kubernetes manifests
+  #      run: |
+  #        kubectl apply -f k8s/order-deployment.yaml --validate=false
+  #        kubectl apply -f k8s/order-service.yaml
+  #        kubectl apply -f k8s/order-configmap.yaml
+  #        kubectl apply -f k8s/order-secrets.yaml
