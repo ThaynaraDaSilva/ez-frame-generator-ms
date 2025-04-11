@@ -1,6 +1,6 @@
 package br.duosilva.tech.solutions.ez.frame.generator.ms.application.dto;
 
-public class VideoDataResponseDTO {
+public class VideoDataResponseDto {
 
 	private String videoId;
 	private String originalFileName;
@@ -10,7 +10,7 @@ public class VideoDataResponseDTO {
 	private String userId;
 	private String userEmai;
 
-	public VideoDataResponseDTO(String videoId, String originalFileName, String s3BucketName, String s3Key,
+	public VideoDataResponseDto(String videoId, String originalFileName, String s3BucketName, String s3Key,
 			String uploadTimestamp, String userId, String userEmai) {
 		super();
 		this.videoId = videoId;

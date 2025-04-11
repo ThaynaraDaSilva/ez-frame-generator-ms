@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import br.duosilva.tech.solutions.ez.frame.generator.ms.adapters.out.s3.AmazonS3Adapter;
-import br.duosilva.tech.solutions.ez.frame.generator.ms.application.dto.VideoDataResponseDTO;
+import br.duosilva.tech.solutions.ez.frame.generator.ms.application.dto.VideoDataResponseDto;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.domain.service.VideoProcessingService;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.frameworks.exception.BusinessRuleException;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.frameworks.exception.ErrorMessages;
@@ -26,13 +26,15 @@ public class FrameGeneratorUseCase {
 
 	private final VideoProcessingService videoProcessingService;
 	private final AmazonS3Adapter amazonS3Adapter;
+	private final VideoIngestionIntegrationUseCase videoIngestionIntegrationUseCase;
 
-	public FrameGeneratorUseCase(VideoProcessingService videoProcessingService, AmazonS3Adapter amazonS3Adapter) {
+	public FrameGeneratorUseCase(VideoProcessingService videoProcessingService, AmazonS3Adapter amazonS3Adapter, VideoIngestionIntegrationUseCase videoIngestionIntegrationUseCase) {
 		this.videoProcessingService = videoProcessingService;
 		this.amazonS3Adapter = amazonS3Adapter;
+		this.videoIngestionIntegrationUseCase = videoIngestionIntegrationUseCase;
 	}
 
-	public void retrieveAndProcessBucketVideo(VideoDataResponseDTO videoDataResponseDTO) {
+	public void retrieveAndProcessBucketVideo(VideoDataResponseDto videoDataResponseDTO) {
 		long startTime = System.currentTimeMillis();
 		File videoFile = null;
 
@@ -62,6 +64,8 @@ public class FrameGeneratorUseCase {
 			// 4. Gerar URL temporaria para download
 			String presignedUrl = amazonS3Adapter.generatePresignedUrl(s3ObjectKey, PRESIGNED_URL_DURATION);
 			LOGGER.info("#### PRESIGNED URL (VALID FOR 15 MINUTES): {} ####", presignedUrl);
+			
+			videoIngestionIntegrationUseCase.updateVideoProcessingStatus(videoDataResponseDTO.getVideoId(), "COMPLETED", presignedUrl);
 
 		} catch (Exception e) {
 			throw new BusinessRuleException("FAILED TO PROCESS VIDEO", e);
