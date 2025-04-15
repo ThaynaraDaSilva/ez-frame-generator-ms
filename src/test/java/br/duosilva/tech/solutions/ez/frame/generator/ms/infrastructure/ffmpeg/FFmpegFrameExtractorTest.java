@@ -27,7 +27,7 @@ public class FFmpegFrameExtractorTest {
 
     @Test
     void extractFramesFromVideo_shouldThrowExceptionForInvalidFile() throws IOException {
-        File dummyFile = File.createTempFile("dummy", ".mp4");
+        File dummyFile = File.createTempFile("dummy", ".txt");
         dummyFile.deleteOnExit();
 
         BusinessRuleException ex = assertThrows(BusinessRuleException.class, () -> {
@@ -40,7 +40,7 @@ public class FFmpegFrameExtractorTest {
     @Test
     void extractFrames_shouldThrowExceptionForInvalidMultipartFile() throws IOException {
         byte[] content = "not a real video".getBytes();
-        MultipartFile multipartFile = new MockMultipartFile("file", "video.mp4", "video/mp4", content);
+        MultipartFile multipartFile = new MockMultipartFile("file", "video.txt", "video/mp4", content);
 
         BusinessRuleException ex = assertThrows(BusinessRuleException.class, () -> {
             extractor.extractFrames(multipartFile);
@@ -52,7 +52,7 @@ public class FFmpegFrameExtractorTest {
     @Test
     void extractFrames_shouldThrowBusinessRuleException_whenTransferFails() throws IOException {
         MultipartFile multipartFile = mock(MultipartFile.class);
-        when(multipartFile.getOriginalFilename()).thenReturn("video.mp4");
+        when(multipartFile.getOriginalFilename()).thenReturn("video.txt");
         doThrow(new IOException("IO error")).when(multipartFile).transferTo(any(File.class));
 
         BusinessRuleException ex = assertThrows(BusinessRuleException.class, () -> {
@@ -65,7 +65,7 @@ public class FFmpegFrameExtractorTest {
     @Test
     void extractFrames_shouldDeleteTemporaryFile() throws IOException {
         byte[] content = "not a real video".getBytes();
-        MultipartFile multipartFile = new MockMultipartFile("file", "video.mp4", "video/mp4", content);
+        MultipartFile multipartFile = new MockMultipartFile("file", "video.txt", "video/mp4", content);
 
 
         try {
