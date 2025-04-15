@@ -30,6 +30,14 @@ jobs:
   build-and-test:
     needs: setup-environment-tools
     runs-on: ubuntu-latest
+    services:
+      localstack:
+        image: localstack/localstack:latest
+        env:
+          SERVICES: s3,sqs # Add services you need
+          DEFAULT_REGION: us-east-1
+        ports:
+          - 4566:4566
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
