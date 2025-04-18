@@ -23,7 +23,7 @@ public class AmazonSQSConfig {
 
 	}
 
-	@Bean
+	/*@Bean
 	public SqsClient sqsClient() {
 		SqsClientBuilder builder = SqsClient.builder().region(Region.of(amazonProperties.getRegion()))
 				.credentialsProvider(StaticCredentialsProvider
@@ -37,9 +37,27 @@ public class AmazonSQSConfig {
 		}
 
 		return builder.build();
-	}
+	}*/
+	
+	 @Bean
+	    public SqsClient sqsClient() {
+	        return SqsClient.builder()
+	                .region(Region.of(amazonProperties.getRegion()))
+	                .build(); //Sem credentialsProvider e endpointOverride
+	    }
+	 
+	 
+	 @Bean
+	 public SqsAsyncClient sqsAsyncClient() {
+	     return SqsAsyncClient.builder()
+	             .region(Region.of(amazonProperties.getRegion()))
+	             .build(); // Sem credentialsProvider e endpointOverride (ok se for LocalStack com configurações globais)
+	 }
 
-	@Bean
+	 
+	 
+
+	/*@Bean
 	public SqsAsyncClient sqsAsyncClient() {
 		 SqsAsyncClientBuilder builder = SqsAsyncClient.builder()
 		            .region(Region.of(amazonProperties.getRegion()))
@@ -58,6 +76,6 @@ public class AmazonSQSConfig {
 		    }
 
 		    return builder.build();
-	}
+	}*/
 
 }

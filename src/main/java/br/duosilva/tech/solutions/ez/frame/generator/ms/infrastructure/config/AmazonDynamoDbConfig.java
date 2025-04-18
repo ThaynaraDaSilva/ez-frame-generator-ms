@@ -18,7 +18,7 @@ public class AmazonDynamoDbConfig {
         this.amazonProperties = amazonProperties;
     }
 
-    @Bean
+    /*@Bean
     public DynamoDbClient dynamoDbClient() {
         var builder = DynamoDbClient.builder()
                 .region(Region.of(amazonProperties.getRegion()))
@@ -37,6 +37,14 @@ public class AmazonDynamoDbConfig {
         }
 
         return builder.build();
+    }*/
+    
+    @Bean
+    public DynamoDbClient dynamoDbClient() {
+        return DynamoDbClient.builder()
+                .region(Region.of(amazonProperties.getRegion()))
+                .build(); // Nao define creds e nem endpoint
     }
+    
 
 }
