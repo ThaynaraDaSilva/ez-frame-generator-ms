@@ -6,6 +6,7 @@ on:
       - develop
       - main
       - feature/create-ci-pipeline
+      - test/unit-tests
 env:
   
   #SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
