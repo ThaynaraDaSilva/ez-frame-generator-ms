@@ -1,6 +1,8 @@
 package br.duosilva.tech.solutions.ez.frame.generator.ms.domain.service;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
@@ -24,8 +26,25 @@ public class VideoProcessingService {
 		this.zipFileGenerator = zipFileGenerator;
 	}
 
+	public File generateVideoFrames(File videoFile) {
+
+		List<File> frames = ffmpegFrameExtractor.extractFramesFromVideo(videoFile);
+		String baseName = FilenameUtils.getBaseName(videoFile.getName());
+
+		File zipFile = compressFrames(frames, baseName);
+
+		frames.forEach(File::delete);
+
+		if (!frames.isEmpty()) {
+			File frameDirectory = frames.get(0).getParentFile();
+			frameDirectory.delete();
+		}
+
+		return zipFile;
+	}
+
 	// Avaliar a trocar para o tipo de retorno de File para VideoMetadata quando
-	// implementar integração com Dynamo
+	// implementar integraçao com Dynamo
 
 	/**
 	 * Processa um vídeo enviado pelo usuário, extraindo os frames e gerando um
@@ -37,17 +56,17 @@ public class VideoProcessingService {
 	 */
 	public File generateFrames(MultipartFile multipartFile) {
 		List<File> frames = ffmpegFrameExtractor.extractFrames(multipartFile);
-	    String baseName = FilenameUtils.getBaseName(multipartFile.getOriginalFilename());
-	    File zipFile = compressFrames(frames, baseName);
+		String baseName = FilenameUtils.getBaseName(multipartFile.getOriginalFilename());
+		File zipFile = compressFrames(frames, baseName);
 
-	    // Clean up
-	    frames.forEach(File::delete);
-	    if (!frames.isEmpty()) {
-	        File frameDirectory = frames.get(0).getParentFile();
-	        frameDirectory.delete();
-	    }
+		// Clean up
+		frames.forEach(File::delete);
+		if (!frames.isEmpty()) {
+			File frameDirectory = frames.get(0).getParentFile();
+			frameDirectory.delete();
+		}
 
-	    return zipFile;
+		return zipFile;
 	}
 
 	/**
@@ -60,5 +79,5 @@ public class VideoProcessingService {
 	private File compressFrames(List<File> frames, String baseName) {
 		return zipFileGenerator.generateZipFromFrames(frames, baseName);
 	}
-	
+
 }

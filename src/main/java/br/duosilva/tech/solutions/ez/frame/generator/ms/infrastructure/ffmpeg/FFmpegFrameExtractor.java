@@ -14,7 +14,7 @@ import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Java2DFrameConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
-import br.duosilva.tech.solutions.ez.frame.generator.ms.domain.policy.VideoUploadPolicy;
+
 import br.duosilva.tech.solutions.ez.frame.generator.ms.frameworks.exception.BusinessRuleException;
 
 @Component
@@ -25,14 +25,18 @@ public class FFmpegFrameExtractor {
 	private static final String TEMP_FRAME_DIR_PREFIX = "frames-generator-ms";
 	private static final String FRAME_FILE_PREFIX = "frame-";
 	private static final String FRAME_FILE_EXTENSION = "jpg";
+	private static final long FRAME_INTERVAL_MS = 1000; // REMOVER POSTERIORMENTE
 
-	private final VideoUploadPolicy videoUploadPolicy;
+	
+	public List<File> extractFramesFromVideo(File videoFile) {
+	    // 1. Criar diretório temporário para os frames
+	    File frameOutputDirectory = createTemporaryFrameDirectory();
 
-	public FFmpegFrameExtractor(VideoUploadPolicy videoUploadPolicy) {
-		this.videoUploadPolicy = videoUploadPolicy;
-
+	    // 2. Extrair os frames diretamente do arquivo físico
+	    return extractFramesFromVideoFile(videoFile, frameOutputDirectory);
 	}
 
+	
 	public List<File> extractFrames(MultipartFile multipartFile) {
 		File temporaryVideoFile = null;
 
@@ -53,6 +57,7 @@ public class FFmpegFrameExtractor {
 			}
 		}
 	}
+
 
 	private File convertMultipartFileToFile(MultipartFile multipartFile) {
 		try {
@@ -93,7 +98,6 @@ public class FFmpegFrameExtractor {
 			int frameNumber = 0;
 			converter = new Java2DFrameConverter();
 
-			long frameIntervalMs = videoUploadPolicy.getFrameExtractionIntervalInMillis();
 			long nextTargetTimestamp = 0;
 
 			while ((frame = frameGrabber.grabImage()) != null) {
@@ -107,7 +111,7 @@ public class FFmpegFrameExtractor {
 						ImageIO.write(bufferedImage, FRAME_FILE_EXTENSION, frameFile);
 						extractedFrames.add(frameFile);
 						frameNumber++;
-						nextTargetTimestamp = currentTimestamp + frameIntervalMs;
+						nextTargetTimestamp = currentTimestamp + FRAME_INTERVAL_MS;
 					}
 				}
 			}

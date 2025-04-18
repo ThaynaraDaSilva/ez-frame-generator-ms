@@ -25,8 +25,9 @@ public class ZipFileGenerator {
 
 	public File generateZipFromFrames(List<File> frames, String baseName) {
 		try {
-			//File tempDir = Files.createTempDirectory(TEMP_ZIP_DIR_PREFIX).toFile();
-			File zipFile = new File(zipOutputDirectory, baseName + ZIP_FILE_SUFFIX);
+			//File zipFile = new File(zipOutputDirectory, baseName + ZIP_FILE_SUFFIX);
+			//File zipFile = File.createTempFile("frames-", ".zip");
+			 File zipFile = File.createTempFile(baseName + "-", ZIP_FILE_SUFFIX);
 
 			try (FileOutputStream fos = new FileOutputStream(zipFile); ZipOutputStream zos = new ZipOutputStream(fos)) {
 
