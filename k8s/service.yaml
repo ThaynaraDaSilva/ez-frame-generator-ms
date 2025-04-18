@@ -5,7 +5,7 @@ metadata:
   labels:
     app: ez-frame-generator-ms
 spec:
-  type: LoadBalancer
+  type: ClusterIP # Internal communication
   selector:
     app: ez-frame-generator-ms
   ports:
