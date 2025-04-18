@@ -7,11 +7,12 @@ on:
       - main
       - feature/create-ci-pipeline
       - test/unit-tests
+      - feature/deploy-ms-aws-config
 env:
   
   #SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
   #SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  #EKS_CLUSTER_NAME: 'ez-frame-generator-cluster-dev'
+  EKS_CLUSTER_NAME: 'ez-frame-generator-cluster'
   JAVA_VERSION: '21'
   DOCKER_IMAGE_NAME: 'dasilvathaynara/ez-frame-generator-ms'
   DOCKER_TAG_LATEST: 'latest'
@@ -112,33 +113,34 @@ jobs:
             ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_TAG_LATEST }}
             ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_TAG_COMMIT }}
   
-  #deploy-to-eks:
-  #  needs: docker-build-push
-  #  runs-on: ubuntu-latest
-  #  if: contains('refs/heads/develop', github.ref) || contains('refs/heads/main', github.ref)
-  #  steps:
-  #    - name: Checkout repository
-  #      uses: actions/checkout@v3
-  #
-  #    - name: Configure AWS credentials
-  #      uses: aws-actions/configure-aws-credentials@v2
-  #      with:
-  #        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #        aws-region: us-east-1
-  #
-  #    - name: Install kubectl
-  #      run: |
-  #        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-  #        chmod +x kubectl
-  #        sudo mv kubectl /usr/local/bin/
-  #
-  #    - name: Update kubeconfig for EKS
-  #      run: aws eks update-kubeconfig --region us-east-1 --name ${{ env.EKS_CLUSTER_NAME }}
-  #
-  #    - name: Apply Kubernetes manifests
-  #      run: |
-  #        kubectl apply -f k8s/order-deployment.yaml --validate=false
-  #        kubectl apply -f k8s/order-service.yaml
-  #        kubectl apply -f k8s/order-configmap.yaml
-  #        kubectl apply -f k8s/order-secrets.yaml
+  deploy-to-eks:
+   needs: docker-build-push
+   runs-on: ubuntu-latest
+
+   steps:
+     - name: Checkout repository
+       uses: actions/checkout@v3
+  
+     - name: Configure AWS credentials
+       uses: aws-actions/configure-aws-credentials@v2
+       with:
+         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+         aws-region: us-east-1
+  
+     - name: Install kubectl
+       run: |
+         curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+         chmod +x kubectl
+         sudo mv kubectl /usr/local/bin/
+  
+     - name: Update kubeconfig for EKS
+       run: aws eks update-kubeconfig --region us-east-1 --name ${{ env.EKS_CLUSTER_NAME }}
+  
+     - name: Apply Kubernetes manifests
+       run: |
+        kubectl apply -f k8s/configmap.yaml
+        kubectl apply -f k8s/secrets.yaml
+        kubectl apply -f k8s/service.yaml
+        kubectl apply -f k8s/deployment.yaml
+        kubectl apply -f k8s/hpa.yaml
