@@ -15,11 +15,19 @@ COPY src ./src
 # Compila a aplicação (gera o .jar no target/)
 RUN mvn clean package -DskipTests
 
-# Etapa 2: imagem enxuta apenas para execução
-FROM eclipse-temurin:21-jdk-alpine
+# Etapa 2: imagem para execução com bibliotecas FFmpeg
+FROM eclipse-temurin:21-jdk
 
-# Define o diretório de execução
 WORKDIR /app
+
+# Instala bibliotecas nativas necessárias ao FFmpeg e JavaCPP
+RUN apt-get update && apt-get install -y \
+    libavcodec-dev \
+    libavformat-dev \
+    libavutil-dev \
+    libswresample-dev \
+    libdrm2 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copia o JAR gerado da etapa de build
 COPY --from=build /app/target/app.jar ./app.jar

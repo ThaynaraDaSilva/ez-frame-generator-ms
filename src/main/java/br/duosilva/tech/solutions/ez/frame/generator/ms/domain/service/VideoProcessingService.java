@@ -33,9 +33,12 @@ public class VideoProcessingService {
 
 		File zipFile = compressFrames(frames, baseName);
 
+		LOGGER.info("#### COMPRESSION PROCESS FINISHED ####");
+		
 		frames.forEach(File::delete);
 
 		if (!frames.isEmpty()) {
+			LOGGER.info("#### GENERATE ZIP IF CONDITION ####");
 			File frameDirectory = frames.get(0).getParentFile();
 			frameDirectory.delete();
 		}
@@ -77,7 +80,9 @@ public class VideoProcessingService {
 	 * @return Arquivo .zip gerado
 	 */
 	private File compressFrames(List<File> frames, String baseName) {
+		LOGGER.info("#### COMPRESS FRAMES METHOD ####");
 		return zipFileGenerator.generateZipFromFrames(frames, baseName);
+		
 	}
 
 }

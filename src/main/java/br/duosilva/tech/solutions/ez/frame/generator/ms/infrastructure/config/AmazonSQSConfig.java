@@ -38,6 +38,7 @@ public class AmazonSQSConfig {
 	    public SqsClient sqsClient() {
 	        return SqsClient.builder()
 	                .region(Region.of(amazonProperties.getRegion()))
+	                .credentialsProvider(DefaultCredentialsProvider.create())
 	                .build(); //Sem credentialsProvider e endpointOverride
 	    }
 	 
