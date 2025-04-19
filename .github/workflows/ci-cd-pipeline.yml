@@ -136,7 +136,7 @@ jobs:
 
      - name: Create AWS credentials secret in Kubernetes
        run: |
-         kubectl create secret generic ez-video-ingestion-secret \
+         kubectl create secret generic ez-video-generator-secret \
            --from-literal=AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
            --from-literal=AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
            --dry-run=client -o yaml | kubectl apply -f -
