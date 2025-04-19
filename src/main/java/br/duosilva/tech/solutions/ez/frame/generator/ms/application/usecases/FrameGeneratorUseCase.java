@@ -46,7 +46,7 @@ public class FrameGeneratorUseCase {
 			InputStream videoStream = amazonS3Adapter.downloadVideo(videoDataResponseDTO.getS3BucketName(),
 					videoDataResponseDTO.getS3Key());
 			
-			LOGGER.info("#### DOWNLOAD PROCESS COMPLETED ####");
+			LOGGER.info("#### DOWNLOAD VIDEO PROCESS COMPLETED ####");
 
 			videoFile = FileUtils.convertStreamToFile(videoStream, ".mp4");
 			String s3ObjectKey = S3KeyGenerator.generateZipKey(videoDataResponseDTO.getUserId(),

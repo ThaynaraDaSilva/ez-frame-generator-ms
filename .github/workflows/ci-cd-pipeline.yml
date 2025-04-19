@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - hotfix/frame-generator-process
 env:
   
   #SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
