@@ -1,15 +1,13 @@
-name: Frame Generator MS CI Pipeline
+name: Frame Generator MS CI/CD Pipeline
 
 on:
   push:
     branches:
-      - develop
       - main
-      - feature/create-ci-pipeline
-      - test/unit-tests
-      - feature/deploy-ms-aws-config
+
+  workflow_dispatch:
+
 env:
-  
   SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   EKS_CLUSTER_NAME: 'ez-frame-generator-cluster'
@@ -101,16 +99,16 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-  
+
       - name: Set up Docker Build
         uses: docker/setup-buildx-action@v3
-  
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-  
+
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
@@ -120,35 +118,48 @@ jobs:
           tags: |
             ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_TAG_LATEST }}
             ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_TAG_COMMIT }}
-  
-#  deploy-to-eks:
-#   needs: docker-build-push
-#   runs-on: ubuntu-latest
-#
-#   steps:
-#     - name: Checkout repository
-#       uses: actions/checkout@v3
-#
-#     - name: Configure AWS credentials
-#       uses: aws-actions/configure-aws-credentials@v2
-#       with:
-#         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#         aws-region: us-east-1
-#
-#     - name: Install kubectl
-#       run: |
-#         curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-#         chmod +x kubectl
-#         sudo mv kubectl /usr/local/bin/
-#
-#     - name: Update kubeconfig for EKS
-#       run: aws eks update-kubeconfig --region us-east-1 --name ${{ env.EKS_CLUSTER_NAME }}
-#
-#     - name: Apply Kubernetes manifests
-#       run: |
-#        kubectl apply -f k8s/configmap.yaml
-#        kubectl apply -f k8s/secrets.yaml
-#        kubectl apply -f k8s/service.yaml
-#        kubectl apply -f k8s/deployment.yaml
-#        kubectl apply -f k8s/hpa.yaml
+
+  deploy-to-eks:
+    needs: docker-build-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+
+      - name: Update kubeconfig for EKS
+        run: aws eks update-kubeconfig --region us-east-1 --name ${{ env.EKS_CLUSTER_NAME }}
+
+      - name: Create AWS credentials secret in Kubernetes
+        run: |
+          kubectl create secret generic ez-frame-generator-secret \
+            --from-literal=AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
+            --from-literal=AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Apply Kubernetes manifests
+        run: |
+          kubectl apply -f k8s/configmap.yaml
+          kubectl apply -f k8s/service.yaml
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/hpa.yaml
+          kubectl rollout restart deployment ez-frame-generator-ms
+
+      - name: Force rollout restart
+        run: |
+          if kubectl get deployment ez-frame-generator-ms >/dev/null 2>&1; then
+              kubectl rollout restart deployment ez-frame-generator-ms
+          fi
