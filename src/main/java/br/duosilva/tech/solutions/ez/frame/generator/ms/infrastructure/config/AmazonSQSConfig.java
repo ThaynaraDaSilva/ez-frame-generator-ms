@@ -1,17 +1,12 @@
 package br.duosilva.tech.solutions.ez.frame.generator.ms.infrastructure.config;
 
-import java.net.URI;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.sqs.SqsClient;
-import software.amazon.awssdk.services.sqs.SqsClientBuilder;
 import software.amazon.awssdk.services.sqs.SqsAsyncClient;
-import software.amazon.awssdk.services.sqs.SqsAsyncClientBuilder;
+import software.amazon.awssdk.services.sqs.SqsClient;
 
 @Configuration
 public class AmazonSQSConfig {
@@ -23,7 +18,7 @@ public class AmazonSQSConfig {
 
 	}
 
-	@Bean
+	/*@Bean
 	public SqsClient sqsClient() {
 		SqsClientBuilder builder = SqsClient.builder().region(Region.of(amazonProperties.getRegion()))
 				.credentialsProvider(StaticCredentialsProvider
@@ -37,9 +32,28 @@ public class AmazonSQSConfig {
 		}
 
 		return builder.build();
-	}
+	}*/
+	
+	 @Bean
+	    public SqsClient sqsClient() {
+	        return SqsClient.builder()
+	                .region(Region.of(amazonProperties.getRegion()))
+	                .build(); //Sem credentialsProvider e endpointOverride
+	    }
+	 
+	 
+	 @Bean
+	 public SqsAsyncClient sqsAsyncClient() {
+	     return SqsAsyncClient.builder()
+	             .region(Region.of(amazonProperties.getRegion()))
+	             .credentialsProvider(DefaultCredentialsProvider.create())
+	             .build(); // Sem credentialsProvider e endpointOverride (ok se for LocalStack com configurações globais)
+	 }
 
-	@Bean
+	 
+	 
+
+	/*@Bean
 	public SqsAsyncClient sqsAsyncClient() {
 		 SqsAsyncClientBuilder builder = SqsAsyncClient.builder()
 		            .region(Region.of(amazonProperties.getRegion()))
@@ -58,6 +72,6 @@ public class AmazonSQSConfig {
 		    }
 
 		    return builder.build();
-	}
+	}*/
 
 }
