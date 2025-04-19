@@ -65,6 +65,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'maven'
+
       - name: Run SonarQube Scan
         run: mvn clean verify sonar:sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}
 
