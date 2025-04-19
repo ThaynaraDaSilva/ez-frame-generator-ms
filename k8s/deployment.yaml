@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ez-frame-generator-ms
+  labels:
+    app: ez-frame-generator-ms
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ez-frame-generator-ms
+  template:
+    metadata:
+      labels:
+        app: ez-frame-generator-ms
+    spec:
+      containers:
+      - name: ez-frame-generator-ms
+        image: dasilvathaynara/ez-frame-generator-ms:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: JAVA_OPTS
+          value: "-Xms100m -Xmx512m -XX:+UseParallelGC"
+
+        envFrom:
+        - configMapRef:
+            name: ez-frame-generator-configmap
+
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "150Mi"
+          limits:
+            cpu: "300m"
+            memory: "500Mi"
+
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          failureThreshold: 3
