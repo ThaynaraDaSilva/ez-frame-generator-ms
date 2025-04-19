@@ -147,3 +147,11 @@ jobs:
         kubectl apply -f k8s/service.yaml
         kubectl apply -f k8s/deployment.yaml
         kubectl apply -f k8s/hpa.yaml
+        kubectl rollout restart deployment ez-frame-generator-ms
+     
+     - name: Force rollout restart
+       run: |
+        if kubectl get deployment ez-frame-generator-ms >/dev/null 2>&1; then
+            kubectl rollout restart deployment ez-frame-generator-ms
+        fi
+           
