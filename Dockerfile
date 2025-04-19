@@ -15,12 +15,6 @@ COPY src ./src
 # Compila a aplicação (gera o .jar no target/)
 RUN mvn clean package -DskipTests
 
-# Etapa 2: imagem enxuta apenas para execução
-#FROM eclipse-temurin:21-jdk-alpine
-
-# Define o diretório de execução
-#WORKDIR /app
-
 # Etapa 2: imagem para execução com bibliotecas FFmpeg
 FROM eclipse-temurin:21-jdk
 
