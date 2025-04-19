@@ -29,6 +29,8 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
 
 		<sonar.projectKey>ez-frame_generator</sonar.projectKey>
 		<sonar.organization>ez-frame</sonar.organization>
