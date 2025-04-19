@@ -45,13 +45,19 @@ public class FrameGeneratorUseCase {
 
 			InputStream videoStream = amazonS3Adapter.downloadVideo(videoDataResponseDTO.getS3BucketName(),
 					videoDataResponseDTO.getS3Key());
+			
+			LOGGER.info("#### DOWNLOAD PROCESS COMPLETED ####");
 
 			videoFile = FileUtils.convertStreamToFile(videoStream, ".mp4");
 			String s3ObjectKey = S3KeyGenerator.generateZipKey(videoDataResponseDTO.getUserId(),
 					videoDataResponseDTO.getVideoId(), videoDataResponseDTO.getOriginalFileName());
+			
+			LOGGER.info("#### CONVERT TO FILE PROCESS COMPLETED ####");
 
 			// 2. Gerar frames e criar ZIP
 			File zipFile = videoProcessingService.generateVideoFrames(videoFile);
+			
+			LOGGER.info("#### GENERATE ZIP COMPLETED ####");
 
 			// 3. Fazer upload do ZIP (se não existir)
 			if (amazonS3Adapter.doesZipExistInS3(s3ObjectKey)) {
