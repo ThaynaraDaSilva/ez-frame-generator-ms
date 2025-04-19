@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - hotfix/amazon-creds-configuration
 env:
   
   #SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
