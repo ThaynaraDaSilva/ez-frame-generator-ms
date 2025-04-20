@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - hotfix/performance-issues
 
 env:
   SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
