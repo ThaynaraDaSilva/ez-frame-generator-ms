@@ -1,6 +1,8 @@
 package br.duosilva.tech.solutions.ez.frame.generator.ms.adapters.in.listener;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +30,7 @@ public class SQSListener {
 	private final SqsAsyncClient sqsAsyncClient;
 	private final AmazonProperties amazonProperties;
 	private final FrameGeneratorUseCase frameGeneratorUseCase;
+	private final ExecutorService executorService = Executors.newFixedThreadPool(10); 
 
 	public SQSListener(ObjectMapper objectMapper, SqsAsyncClient sqsAsyncClient, AmazonProperties amazonProperties,
 			FrameGeneratorUseCase frameGeneratorUseCase) {
@@ -57,7 +60,7 @@ public class SQSListener {
 			LOGGER.info("#### NO MESSAGES ####");
 		} else {
 			for (Message message : response.messages()) {
-				CompletableFuture.runAsync(() -> retrieveVideoData(message.body(), message.receiptHandle()));
+				CompletableFuture.runAsync(() -> retrieveVideoData(message.body(), message.receiptHandle()), executorService);
 				//retrieveVideoData(message.body(), message.receiptHandle());
 			}
 		}
