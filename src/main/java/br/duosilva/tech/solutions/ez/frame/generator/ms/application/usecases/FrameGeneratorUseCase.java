@@ -28,7 +28,8 @@ public class FrameGeneratorUseCase {
 	private final AmazonS3Adapter amazonS3Adapter;
 	private final VideoIngestionIntegrationUseCase videoIngestionIntegrationUseCase;
 
-	public FrameGeneratorUseCase(VideoProcessingService videoProcessingService, AmazonS3Adapter amazonS3Adapter, VideoIngestionIntegrationUseCase videoIngestionIntegrationUseCase) {
+	public FrameGeneratorUseCase(VideoProcessingService videoProcessingService, AmazonS3Adapter amazonS3Adapter,
+			VideoIngestionIntegrationUseCase videoIngestionIntegrationUseCase) {
 		this.videoProcessingService = videoProcessingService;
 		this.amazonS3Adapter = amazonS3Adapter;
 		this.videoIngestionIntegrationUseCase = videoIngestionIntegrationUseCase;
@@ -37,26 +38,25 @@ public class FrameGeneratorUseCase {
 	public void retrieveAndProcessBucketVideo(VideoDataResponseDto videoDataResponseDTO) {
 		long startTime = System.currentTimeMillis();
 		File videoFile = null;
+		File zipFile = null;
 
 		LOGGER.info("#### VIDEO PROCESSING STARTED: {} ####", videoDataResponseDTO.getOriginalFileName());
 
 		try {
 			// 1. Baixar video do S3 como InputStream e converter
-
 			InputStream videoStream = amazonS3Adapter.downloadVideo(videoDataResponseDTO.getS3BucketName(),
 					videoDataResponseDTO.getS3Key());
-			
+
 			LOGGER.info("#### DOWNLOAD VIDEO PROCESS COMPLETED ####");
 
 			videoFile = FileUtils.convertStreamToFile(videoStream, ".mp4");
 			String s3ObjectKey = S3KeyGenerator.generateZipKey(videoDataResponseDTO.getUserId(),
 					videoDataResponseDTO.getVideoId(), videoDataResponseDTO.getOriginalFileName());
-			
+
 			LOGGER.info("#### CONVERT TO FILE PROCESS COMPLETED ####");
 
 			// 2. Gerar frames e criar ZIP
-			File zipFile = videoProcessingService.generateVideoFrames(videoFile);
-			
+			zipFile = videoProcessingService.generateVideoFrames(videoFile);
 			LOGGER.info("#### GENERATE ZIP COMPLETED ####");
 
 			// 3. Fazer upload do ZIP (se não existir)
@@ -67,18 +67,22 @@ public class FrameGeneratorUseCase {
 				LOGGER.info("#### ZIP UPLOADED TO S3: {} ####", s3ObjectKey);
 			}
 
-			// 4. Gerar URL temporaria para download
+			// 4. Gerar URL temporária para download
 			String presignedUrl = amazonS3Adapter.generatePresignedUrl(s3ObjectKey, PRESIGNED_URL_DURATION);
 			LOGGER.info("#### PRESIGNED URL (VALID FOR 15 MINUTES): {} ####", presignedUrl);
-			
-			videoIngestionIntegrationUseCase.updateVideoProcessingStatus(videoDataResponseDTO.getVideoId(), "COMPLETED", presignedUrl);
+
+			// 5. Notificar Ingestion-MS
+			videoIngestionIntegrationUseCase.updateVideoProcessingStatus(videoDataResponseDTO.getVideoId(), "COMPLETED",
+					presignedUrl);
 
 		} catch (Exception e) {
 			throw new BusinessRuleException("FAILED TO PROCESS VIDEO", e);
 		} finally {
-
 			if (videoFile != null && videoFile.exists()) {
 				videoFile.delete();
+			}
+			if (zipFile != null && zipFile.exists()) {
+				zipFile.delete();
 			}
 
 			long duration = System.currentTimeMillis() - startTime;
