@@ -1,19 +1,18 @@
 package br.duosilva.tech.solutions.ez.frame.generator.ms.application.usecases;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 
 import br.duosilva.tech.solutions.ez.frame.generator.ms.adapters.out.s3.AmazonS3Adapter;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.application.dto.VideoDataResponseDto;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.domain.service.VideoProcessingService;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.frameworks.exception.BusinessRuleException;
-import br.duosilva.tech.solutions.ez.frame.generator.ms.frameworks.exception.ErrorMessages;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.infrastructure.S3.S3KeyGenerator;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.infrastructure.utils.DateTimeUtils;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.infrastructure.utils.FileUtils;
@@ -35,60 +34,62 @@ public class FrameGeneratorUseCase {
 		this.videoIngestionIntegrationUseCase = videoIngestionIntegrationUseCase;
 	}
 
-	public void retrieveAndProcessBucketVideo(VideoDataResponseDto videoDataResponseDTO) {
-		long startTime = System.currentTimeMillis();
+	public void initiateFrameGenerationProcess(VideoDataResponseDto dto) {
 		File videoFile = null;
 		File zipFile = null;
+		long start = System.currentTimeMillis();
 
-		LOGGER.info("#### VIDEO PROCESSING STARTED: {} ####", videoDataResponseDTO.getOriginalFileName());
+		LOGGER.info("#### FRAME GENERATION PROCESS STARTED: {} ####", dto.getOriginalFileName());
 
 		try {
-			// 1. Baixar video do S3 como InputStream e converter
-			InputStream videoStream = amazonS3Adapter.downloadVideo(videoDataResponseDTO.getS3BucketName(),
-					videoDataResponseDTO.getS3Key());
+			videoFile = downloadVideoAsFile(dto);
+			String s3Key = S3KeyGenerator.generateZipKey(dto.getUserId(), dto.getVideoId(), dto.getOriginalFileName());
 
-			LOGGER.info("#### DOWNLOAD VIDEO PROCESS COMPLETED ####");
+			zipFile = generateZipFromVideo(videoFile);
 
-			videoFile = FileUtils.convertStreamToFile(videoStream, ".mp4");
-			String s3ObjectKey = S3KeyGenerator.generateZipKey(videoDataResponseDTO.getUserId(),
-					videoDataResponseDTO.getVideoId(), videoDataResponseDTO.getOriginalFileName());
+			String presignedUrl = uploadZipAndGenerateUrl(s3Key, zipFile);
 
-			LOGGER.info("#### CONVERT TO FILE PROCESS COMPLETED ####");
-
-			// 2. Gerar frames e criar ZIP
-			zipFile = videoProcessingService.generateVideoFrames(videoFile);
-			LOGGER.info("#### GENERATE ZIP COMPLETED ####");
-
-			// 3. Fazer upload do ZIP (se não existir)
-			if (amazonS3Adapter.doesZipExistInS3(s3ObjectKey)) {
-				LOGGER.warn("#### ZIP ALREADY EXISTS IN S3: {} — SKIPPING UPLOAD ####", s3ObjectKey);
-			} else {
-				amazonS3Adapter.uploadZipToS3(s3ObjectKey, zipFile);
-				LOGGER.info("#### ZIP UPLOADED TO S3: {} ####", s3ObjectKey);
-			}
-
-			// 4. Gerar URL temporária para download
-			String presignedUrl = amazonS3Adapter.generatePresignedUrl(s3ObjectKey, PRESIGNED_URL_DURATION);
-			LOGGER.info("#### PRESIGNED URL (VALID FOR 15 MINUTES): {} ####", presignedUrl);
-
-			// 5. Notificar Ingestion-MS
-			videoIngestionIntegrationUseCase.updateVideoProcessingStatus(videoDataResponseDTO.getVideoId(), "COMPLETED",
-					presignedUrl);
+			notifyIngestionService(dto.getVideoId(), presignedUrl);
 
 		} catch (Exception e) {
 			throw new BusinessRuleException("FAILED TO PROCESS VIDEO", e);
 		} finally {
-			if (videoFile != null && videoFile.exists()) {
+			if (videoFile != null && videoFile.exists())
 				videoFile.delete();
-			}
-			if (zipFile != null && zipFile.exists()) {
+			if (zipFile != null && zipFile.exists())
 				zipFile.delete();
-			}
 
-			long duration = System.currentTimeMillis() - startTime;
-			LOGGER.info("#### VIDEO PROCESSING COMPLETED: {} ####", videoDataResponseDTO.getOriginalFileName());
-			LOGGER.info("#### TOTAL PROCESSING TIME: {} ####", DateTimeUtils.formatDuration(duration));
+			LOGGER.info("####  FRAME GENERATION PROCESS COMPLETED: {} ####", dto.getOriginalFileName());
+			LOGGER.info("#### TOTAL TIME: {} ####", DateTimeUtils.formatDuration(System.currentTimeMillis() - start));
 		}
+	}
+
+	private File downloadVideoAsFile(VideoDataResponseDto dto) throws IOException {
+		InputStream stream = amazonS3Adapter.downloadVideo(dto.getS3BucketName(), dto.getS3Key());
+		LOGGER.info("#### DOWNLOAD VIDEO PROCESS COMPLETED ####");
+		return FileUtils.convertStreamToFile(stream, ".mp4");
+	}
+
+	private File generateZipFromVideo(File videoFile) {
+		File zip = videoProcessingService.generateVideoFrames(videoFile);
+		LOGGER.info("#### GENERATE ZIP COMPLETED ####");
+		return zip;
+	}
+
+	private String uploadZipAndGenerateUrl(String s3Key, File zipFile) {
+		if (amazonS3Adapter.doesZipExistInS3(s3Key)) {
+			LOGGER.warn("#### ZIP ALREADY EXISTS IN S3: {} — SKIPPING UPLOAD ####", s3Key);
+		} else {
+			amazonS3Adapter.uploadZipToS3(s3Key, zipFile);
+			LOGGER.info("#### ZIP UPLOADED TO S3: {} ####", s3Key);
+		}
+		String url = amazonS3Adapter.generatePresignedUrl(s3Key, PRESIGNED_URL_DURATION);
+		LOGGER.info("#### PRESIGNED URL: {} ####", url);
+		return url;
+	}
+
+	private void notifyIngestionService(String videoId, String presignedUrl) {
+		videoIngestionIntegrationUseCase.updateVideoProcessingStatus(videoId, "COMPLETED", presignedUrl);
 	}
 
 }

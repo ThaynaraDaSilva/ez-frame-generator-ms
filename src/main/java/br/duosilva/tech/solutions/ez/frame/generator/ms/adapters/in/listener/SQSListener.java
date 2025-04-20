@@ -60,19 +60,19 @@ public class SQSListener {
 			LOGGER.info("#### NO MESSAGES ####");
 		} else {
 			for (Message message : response.messages()) {
-				CompletableFuture.runAsync(() -> retrieveVideoData(message.body(), message.receiptHandle()), executorService);
+				CompletableFuture.runAsync(() -> initiateGenerateFramesProcess(message.body(), message.receiptHandle()), executorService);
 				//retrieveVideoData(message.body(), message.receiptHandle());
 			}
 		}
 	}
 
-	private void retrieveVideoData(String message, String receiptHandle) {
+	private void initiateGenerateFramesProcess(String message, String receiptHandle) {
 		try {
 
 			VideoDataResponseDto videoDataResponse = objectMapper.readValue(message, VideoDataResponseDto.class);
 
 			// retrieve video
-			frameGeneratorUseCase.retrieveAndProcessBucketVideo(videoDataResponse);
+			frameGeneratorUseCase.initiateFrameGenerationProcess(videoDataResponse);
 	
 			LOGGER.info("#### RETRIEVE VIDEO FROM BUCKET COMPLETED ####");
 

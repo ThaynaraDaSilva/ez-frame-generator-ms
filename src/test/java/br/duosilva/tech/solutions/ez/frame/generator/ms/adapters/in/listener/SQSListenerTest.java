@@ -52,22 +52,20 @@ class SQSListenerTest {
         amazonProperties = mock(AmazonProperties.class);
         frameGeneratorUseCase = mock(FrameGeneratorUseCase.class);
         executorService = Executors.newSingleThreadExecutor();
-        
-        AmazonProperties.Sqs sqsConfig = mock(Sqs.class);
+
+        AmazonProperties.Sqs sqsConfig = mock(AmazonProperties.Sqs.class);
         when(amazonProperties.getSqs()).thenReturn(sqsConfig);
         when(sqsConfig.getQueueName()).thenReturn("my-queue");
 
-        // Mock do retorno da URL da fila
         when(sqsAsyncClient.getQueueUrl(any(GetQueueUrlRequest.class)))
                 .thenReturn(CompletableFuture.completedFuture(
                         GetQueueUrlResponse.builder().queueUrl("http://fake-queue-url").build()));
 
-        // Mock do retorno do ObjectMapper
         when(objectMapper.readValue(anyString(), eq(VideoDataResponseDto.class)))
                 .thenReturn(new VideoDataResponseDto(
                         "id", "videoId", "bucket", "objectKey", "resultKey", "COMPLETED", null));
 
-        sqsListener = new SQSListener(objectMapper, sqsAsyncClient, amazonProperties, frameGeneratorUseCase,executorService);
+        sqsListener = new SQSListener(objectMapper, sqsAsyncClient, amazonProperties, frameGeneratorUseCase, executorService);
     }
 
     @Test
@@ -90,24 +88,23 @@ class SQSListenerTest {
 
         when(sqsAsyncClient.deleteMessage(any(DeleteMessageRequest.class)))
                 .thenReturn(CompletableFuture.completedFuture(DeleteMessageResponse.builder().build()));
-        
+
         CountDownLatch latch = new CountDownLatch(1);
         doAnswer(invocation -> {
-            latch.countDown(); 
+            latch.countDown();
             return null;
-        }).when(frameGeneratorUseCase).retrieveAndProcessBucketVideo(any(VideoDataResponseDto.class));
+        }).when(frameGeneratorUseCase).initiateFrameGenerationProcess(any(VideoDataResponseDto.class));
 
         // Act
         sqsListener.pollMessagesFromQueue();
-        
+
         boolean completed = latch.await(5, TimeUnit.SECONDS);
         assertTrue(completed, "O processamento assíncrono não foi concluído a tempo.");
 
         // Assert
-        verify(frameGeneratorUseCase, times(1)).retrieveAndProcessBucketVideo(any(VideoDataResponseDto.class));
+        verify(frameGeneratorUseCase, times(1)).initiateFrameGenerationProcess(any(VideoDataResponseDto.class));
         verify(sqsAsyncClient, times(1)).deleteMessage(any(DeleteMessageRequest.class));
     }
-
 
     @Test
     void shouldNotFailWhenNoMessages() {
@@ -117,6 +114,6 @@ class SQSListenerTest {
 
         sqsListener.pollMessagesFromQueue();
 
-        verify(frameGeneratorUseCase, never()).retrieveAndProcessBucketVideo(any());
+        verify(frameGeneratorUseCase, never()).initiateFrameGenerationProcess(any());
     }
 }

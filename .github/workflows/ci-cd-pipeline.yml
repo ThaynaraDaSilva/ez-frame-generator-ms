@@ -25,75 +25,75 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ env.JAVA_VERSION }}
 
-  # build-and-test:
-  #   needs: setup-environment-tools
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v4
+  build-and-test:
+    needs: setup-environment-tools
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  #     - name: Set up JDK
-  #       uses: actions/setup-java@v4
-  #       with:
-  #         distribution: 'temurin'
-  #         java-version: ${{ env.JAVA_VERSION }}
-  #         cache: 'maven'
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'maven'
 
-  #     - name: Build and Run Tests
-  #       run: mvn clean verify
+      - name: Build and Run Tests
+        run: mvn clean verify
 
-  #     - name: Generate Test Report
-  #       run: mvn surefire-report:report-only
+      - name: Generate Test Report
+        run: mvn surefire-report:report-only
 
-  #     - name: Show Test Results in Logs
-  #       if: always()
-  #       run: cat target/surefire-reports/*.txt || echo "No test results found"
+      - name: Show Test Results in Logs
+        if: always()
+        run: cat target/surefire-reports/*.txt || echo "No test results found"
 
-  #     - name: Upload Test Report as Artifact
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: test-report
-  #         path: target/surefire-reports
+      - name: Upload Test Report as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: target/surefire-reports
 
-  # static-code-analysis:
-  #   needs: build-and-test
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v3
+  static-code-analysis:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-  #     - name: Set up JDK
-  #       uses: actions/setup-java@v4
-  #       with:
-  #         distribution: 'temurin'
-  #         java-version: ${{ env.JAVA_VERSION }}
-  #         cache: 'maven'
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'maven'
 
-  #     - name: Run SonarQube Scan
-  #       run: mvn clean verify sonar:sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+      - name: Run SonarQube Scan
+        run: mvn clean verify sonar:sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}
 
-  #     - name: Wait for SonarCloud Processing
-  #       run: sleep 10
+      - name: Wait for SonarCloud Processing
+        run: sleep 10
 
-  #     - name: Check SonarQube Quality Gate Status
-  #       run: |
-  #         response=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/qualitygates/project_status?projectKey=${{ secrets.SONAR_PROJECT_KEY }}")
-  #         status=$(echo "$response" | jq -r '.projectStatus.status')
+      - name: Check SonarQube Quality Gate Status
+        run: |
+          response=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/qualitygates/project_status?projectKey=${{ secrets.SONAR_PROJECT_KEY }}")
+          status=$(echo "$response" | jq -r '.projectStatus.status')
 
-  #         echo "Quality Gate Status: $status"
+          echo "Quality Gate Status: $status"
 
-  #         if [[ "$status" != "OK" ]]; then
-  #           echo "❌ Quality Gate failed!"
-  #           exit 1
-  #         fi
+          if [[ "$status" != "OK" ]]; then
+            echo "❌ Quality Gate failed!"
+            exit 1
+          fi
 
-  #     - name: ✅ SonarQube Passed
-  #       run: echo "🎉 Quality Gate Passed."
+      - name: ✅ SonarQube Passed
+        run: echo "🎉 Quality Gate Passed."
 
   docker-build-push:
-    #needs:
-      #- build-and-test
-      #- static-code-analysis
+    needs:
+      - build-and-test
+      - static-code-analysis
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository

@@ -26,59 +26,58 @@ public class FFmpegFrameExtractor {
 
 	private static final String TEMP_VIDEO_PREFIX = "uploaded-video";
 	private static final String TEMP_VIDEO_DEFAULT_EXTENSION = ".mp4";
-	private static final String TEMP_FRAME_DIR_PREFIX = "frames-generator-ms";
 	private static final String FRAME_FILE_PREFIX = "frame-";
 	private static final String FRAME_FILE_EXTENSION = "jpg";
 	private static final long FRAME_INTERVAL_MS = 1000; // REMOVER POSTERIORMENTE
 	private static final Logger LOGGER = LoggerFactory.getLogger(FFmpegFrameExtractor.class);
 
 	public File extractFramesFromVideo(File videoFile) {
-		 if (videoFile == null || !videoFile.exists()) {
-		        throw new BusinessRuleException("Input video file is null or does not exist.");
-		    }
+		if (videoFile == null || !videoFile.exists()) {
+			throw new BusinessRuleException("Input video file is null or does not exist.");
+		}
 
-		    LOGGER.info("#### FRAME EXTRACTION INITIATED FOR FILE: {} ####", videoFile.getAbsolutePath());
+		LOGGER.info("#### FRAME EXTRACTION INITIATED FOR FILE: {} ####", videoFile.getAbsolutePath());
 
-		    long start = System.currentTimeMillis();
-		    File zipFile;
+		long start = System.currentTimeMillis();
+		File zipFile;
 
-		    try {
-		        zipFile = File.createTempFile("video-frames", ".zip");
-		        extractFramesAndWriteToZip(videoFile, zipFile);
-		    } catch (IOException e) {
-		        throw new BusinessRuleException("Failed to create temp zip file.", e);
-		    }
+		try {
+			zipFile = File.createTempFile("video-frames", ".zip");
+			extractFramesAndWriteToZip(videoFile, zipFile);
+		} catch (IOException e) {
+			throw new BusinessRuleException("Failed to create temp zip file.", e);
+		}
 
-		    long duration = System.currentTimeMillis() - start;
-		    LOGGER.info("#### ZIP CREATED IN {} ms: {} ####", duration, zipFile.getAbsolutePath());
+		long duration = System.currentTimeMillis() - start;
+		LOGGER.info("#### ZIP CREATED IN {} ms: {} ####", duration, zipFile.getAbsolutePath());
 
-		    return zipFile;
+		return zipFile;
 	}
 
 	public File extractFrames(MultipartFile multipartFile) {
 		File temporaryVideoFile = null;
 
-	    try {
-	        // 1. Converter MultipartFile em arquivo físico temporário
-	        temporaryVideoFile = convertMultipartFileToFile(multipartFile);
+		try {
+			// 1. Converter MultipartFile em arquivo físico temporário
+			temporaryVideoFile = convertMultipartFileToFile(multipartFile);
 
-	        // 2. Criar o arquivo ZIP temporário para armazenar os frames
-	        File zipOutputFile = File.createTempFile("video-frames", ".zip");
+			// 2. Criar o arquivo ZIP temporário para armazenar os frames
+			File zipOutputFile = File.createTempFile("video-frames", ".zip");
 
-	        // 3. Extrair os frames diretamente para o ZIP
-	        extractFramesAndWriteToZip(temporaryVideoFile, zipOutputFile);
+			// 3. Extrair os frames diretamente para o ZIP
+			extractFramesAndWriteToZip(temporaryVideoFile, zipOutputFile);
 
-	        // 4. Retornar o arquivo ZIP com os frames
-	        return zipOutputFile;
+			// 4. Retornar o arquivo ZIP com os frames
+			return zipOutputFile;
 
-	    } catch (IOException e) {
-	        throw new BusinessRuleException("Failed to process video file.", e);
-	    } finally {
-	        // 5. Limpar o vídeo temporário do disco
-	        if (temporaryVideoFile != null && temporaryVideoFile.exists()) {
-	            temporaryVideoFile.delete();
-	        }
-	    }
+		} catch (IOException e) {
+			throw new BusinessRuleException("Failed to process video file.", e);
+		} finally {
+			// 5. Limpar o vídeo temporário do disco
+			if (temporaryVideoFile != null && temporaryVideoFile.exists()) {
+				temporaryVideoFile.delete();
+			}
+		}
 	}
 
 	private File convertMultipartFileToFile(MultipartFile multipartFile) {
@@ -97,14 +96,6 @@ public class FFmpegFrameExtractor {
 			return fileName.substring(fileName.lastIndexOf("."));
 		}
 		return TEMP_VIDEO_DEFAULT_EXTENSION;
-	}
-
-	private File createTemporaryFrameDirectory() {
-		try {
-			return Files.createTempDirectory(TEMP_FRAME_DIR_PREFIX).toFile();
-		} catch (IOException e) {
-			throw new BusinessRuleException("Failed to create temporary directory for extracted frames.");
-		}
 	}
 
 	public void extractFramesAndWriteToZip(File videoFile, File zipOutputFile) {
