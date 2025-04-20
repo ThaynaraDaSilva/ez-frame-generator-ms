@@ -51,7 +51,7 @@ public class SQSListener {
 	@Scheduled(fixedRate = 10000) // 5000 Runs every 5 seconds
 	public void pollMessagesFromQueue() {
 		// Fetch up to 5 messages at a time
-		ReceiveMessageRequest request = ReceiveMessageRequest.builder().queueUrl(obtainSQSUrl()).maxNumberOfMessages(5) // time
+		ReceiveMessageRequest request = ReceiveMessageRequest.builder().queueUrl(obtainSQSUrl()).maxNumberOfMessages(1) // time
 				.build();
 
 		ReceiveMessageResponse response = sqsAsyncClient.receiveMessage(request).join();
@@ -88,7 +88,7 @@ public class SQSListener {
 				.receiptHandle(receiptHandle).build();
 
 		sqsAsyncClient.deleteMessage(deleteMessageRequest).join();
-		LOGGER.info("#### MESSAGE DELETED: {} ####", deleteMessageRequest);
+		LOGGER.info("#### MESSAGE DELETED ####");
 		LOGGER.info("############################################################");
 	}
 

@@ -84,7 +84,7 @@ public class FrameGeneratorUseCase {
 			LOGGER.info("#### ZIP UPLOADED TO S3: {} ####", s3Key);
 		}
 		String url = amazonS3Adapter.generatePresignedUrl(s3Key, PRESIGNED_URL_DURATION);
-		LOGGER.info("#### PRESIGNED URL: {} ####", url);
+		LOGGER.info("#### PRESIGNED URL GENERATED ####");
 		return url;
 	}
 
