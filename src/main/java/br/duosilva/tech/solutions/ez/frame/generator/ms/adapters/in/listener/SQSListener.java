@@ -2,7 +2,6 @@ package br.duosilva.tech.solutions.ez.frame.generator.ms.adapters.in.listener;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,15 +29,16 @@ public class SQSListener {
 	private final SqsAsyncClient sqsAsyncClient;
 	private final AmazonProperties amazonProperties;
 	private final FrameGeneratorUseCase frameGeneratorUseCase;
-	private final ExecutorService executorService = Executors.newFixedThreadPool(10); 
+	private final ExecutorService executorService; 
 
 	public SQSListener(ObjectMapper objectMapper, SqsAsyncClient sqsAsyncClient, AmazonProperties amazonProperties,
-			FrameGeneratorUseCase frameGeneratorUseCase) {
+			FrameGeneratorUseCase frameGeneratorUseCase,ExecutorService executorService) {
 		super();
 		this.objectMapper = objectMapper;
 		this.sqsAsyncClient = sqsAsyncClient;
 		this.amazonProperties = amazonProperties;
 		this.frameGeneratorUseCase = frameGeneratorUseCase;
+		this.executorService = executorService;
 	}
 
 	private String obtainSQSUrl() {
@@ -80,7 +80,7 @@ public class SQSListener {
 			deleteMessage(receiptHandle);
 
 		} catch (Exception e) {
-			LOGGER.error("############################################################: {} ", e);
+			LOGGER.error("Error processing video message. Message body: {}. Error: {}", message, e.getMessage(), e);
 		}
 	}
 
