@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,7 +27,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.application.dto.VideoDataResponseDto;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.application.usecases.FrameGeneratorUseCase;
 import br.duosilva.tech.solutions.ez.frame.generator.ms.infrastructure.config.AmazonProperties;
-import br.duosilva.tech.solutions.ez.frame.generator.ms.infrastructure.config.AmazonProperties.Sqs;
 import software.amazon.awssdk.services.sqs.SqsAsyncClient;
 import software.amazon.awssdk.services.sqs.model.DeleteMessageRequest;
 import software.amazon.awssdk.services.sqs.model.DeleteMessageResponse;
@@ -103,7 +103,7 @@ class SQSListenerTest {
 
         // Assert
         verify(frameGeneratorUseCase, times(1)).initiateFrameGenerationProcess(any(VideoDataResponseDto.class));
-        verify(sqsAsyncClient, times(1)).deleteMessage(any(DeleteMessageRequest.class));
+        verify(sqsAsyncClient, timeout(1000).times(1)).deleteMessage(any(DeleteMessageRequest.class));
     }
 
     @Test
