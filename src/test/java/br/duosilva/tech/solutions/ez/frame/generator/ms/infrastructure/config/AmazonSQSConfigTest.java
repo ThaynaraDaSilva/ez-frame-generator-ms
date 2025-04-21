@@ -19,129 +19,34 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AmazonSQSConfigTest {
+	 @Mock
+	    private AmazonProperties amazonProperties;
 
-    @Mock
-    private AmazonProperties amazonProperties;
+	    @InjectMocks
+	    private AmazonSQSConfig amazonSQSConfig;
 
-    @Mock
-    private AmazonProperties.Credentials credentials;
+	    @BeforeEach
+	    void setUp() {
+	        when(amazonProperties.getRegion()).thenReturn("us-east-1");
+	    }
 
-    @Mock
-    private AmazonProperties.Sqs sqs;
+	    @Test
+	    void shouldCreateSqsClient() {
+	        // Act
+	        SqsClient client = amazonSQSConfig.sqsClient();
 
-    @InjectMocks
-    private AmazonSQSConfig amazonSQSConfig;
+	        // Assert
+	        assertNotNull(client);
+	        verify(amazonProperties).getRegion();
+	    }
 
-    @BeforeEach
-    void setUp() {
-        when(amazonProperties.getCredentials()).thenReturn(credentials);
-        when(amazonProperties.getSqs()).thenReturn(sqs);
-        when(amazonProperties.getRegion()).thenReturn("us-east-1");
-        when(credentials.getAccessKey()).thenReturn("test-access-key");
-        when(credentials.getSecretKey()).thenReturn("test-secret-key");
-    }
+	    @Test
+	    void shouldCreateSqsAsyncClient() {
+	        // Act
+	        SqsAsyncClient asyncClient = amazonSQSConfig.sqsAsyncClient();
 
-    @Test
-    void shouldCreateSqsClientWithoutEndpointOverride() {
-        // Arrange
-        when(sqs.getEndpoint()).thenReturn(null);
-
-        // Act
-        SqsClient client = amazonSQSConfig.sqsClient();
-
-        // Assert
-        assertNotNull(client);
-        verify(amazonProperties).getRegion();
-        verify(amazonProperties, times(2)).getCredentials();
-        verify(credentials).getAccessKey();
-        verify(credentials).getSecretKey();
-        verify(sqs).getEndpoint();
-    }
-
-    @Test
-    void shouldCreateSqsClientWithEndpointOverride() {
-        // Arrange
-        String endpoint = "http://localhost:4566";
-        when(sqs.getEndpoint()).thenReturn(endpoint);
-
-        // Act
-        SqsClient client = amazonSQSConfig.sqsClient();
-
-        // Assert
-        assertNotNull(client);
-        verify(amazonProperties).getRegion();
-        verify(amazonProperties, times(2)).getCredentials();
-        verify(credentials).getAccessKey();
-        verify(credentials).getSecretKey();
-        verify(sqs).getEndpoint();
-    }
-
-    @Test
-    void shouldCreateSqsClientWithBlankEndpoint() {
-        // Arrange
-        when(sqs.getEndpoint()).thenReturn("");
-
-        // Act
-        SqsClient client = amazonSQSConfig.sqsClient();
-
-        // Assert
-        assertNotNull(client);
-        verify(amazonProperties).getRegion();
-        verify(amazonProperties, times(2)).getCredentials();
-        verify(credentials).getAccessKey();
-        verify(credentials).getSecretKey();
-        verify(sqs).getEndpoint();
-    }
-
-    @Test
-    void shouldCreateSqsAsyncClientWithoutEndpointOverride() {
-        // Arrange
-        when(sqs.getEndpoint()).thenReturn(null);
-
-        // Act
-        SqsAsyncClient asyncClient = amazonSQSConfig.sqsAsyncClient();
-
-        // Assert
-        assertNotNull(asyncClient);
-        verify(amazonProperties).getRegion();
-        verify(amazonProperties, times(2)).getCredentials();
-        verify(credentials).getAccessKey();
-        verify(credentials).getSecretKey();
-        verify(sqs).getEndpoint();
-    }
-
-    @Test
-    void shouldCreateSqsAsyncClientWithEndpointOverride() {
-        // Arrange
-        String endpoint = "http://localhost:4566";
-        when(sqs.getEndpoint()).thenReturn(endpoint);
-
-        // Act
-        SqsAsyncClient asyncClient = amazonSQSConfig.sqsAsyncClient();
-
-        // Assert
-        assertNotNull(asyncClient);
-        verify(amazonProperties).getRegion();
-        verify(amazonProperties, times(2)).getCredentials();
-        verify(credentials).getAccessKey();
-        verify(credentials).getSecretKey();
-        verify(sqs).getEndpoint();
-    }
-
-    @Test
-    void shouldCreateSqsAsyncClientWithBlankEndpoint() {
-        // Arrange
-        when(sqs.getEndpoint()).thenReturn("");
-
-        // Act
-        SqsAsyncClient asyncClient = amazonSQSConfig.sqsAsyncClient();
-
-        // Assert
-        assertNotNull(asyncClient);
-        verify(amazonProperties).getRegion();
-        verify(amazonProperties, times(2)).getCredentials();
-        verify(credentials).getAccessKey();
-        verify(credentials).getSecretKey();
-        verify(sqs).getEndpoint();
-    }
+	        // Assert
+	        assertNotNull(asyncClient);
+	        verify(amazonProperties).getRegion();
+	    }
 }

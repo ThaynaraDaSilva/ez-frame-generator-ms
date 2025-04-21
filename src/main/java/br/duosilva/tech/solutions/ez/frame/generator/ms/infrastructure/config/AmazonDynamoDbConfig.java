@@ -17,27 +17,6 @@ public class AmazonDynamoDbConfig {
     public AmazonDynamoDbConfig(AmazonProperties amazonProperties) {
         this.amazonProperties = amazonProperties;
     }
-
-    /*@Bean
-    public DynamoDbClient dynamoDbClient() {
-        var builder = DynamoDbClient.builder()
-                .region(Region.of(amazonProperties.getRegion()))
-                .credentialsProvider(
-                        StaticCredentialsProvider.create(
-                                AwsBasicCredentials.create(
-                                        amazonProperties.getCredentials().getAccessKey(),
-                                        amazonProperties.getCredentials().getSecretKey()
-                                )
-                        )
-                );
-
-        String endpoint = amazonProperties.getDynamodb().getEndpoint();
-        if (endpoint != null && !endpoint.isBlank()) {
-            builder.endpointOverride(URI.create(endpoint));
-        }
-
-        return builder.build();
-    }*/
     
     @Bean
     public DynamoDbClient dynamoDbClient() {

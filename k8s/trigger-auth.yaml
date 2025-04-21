@@ -1,0 +1,12 @@
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: keda-aws-auth
+spec:
+  secretTargetRef:
+    - parameter: awsAccessKeyID
+      name: ez-frame-generator-secret
+      key: AWS_ACCESS_KEY_ID
+    - parameter: awsSecretAccessKey
+      name: ez-frame-generator-secret
+      key: AWS_SECRET_ACCESS_KEY

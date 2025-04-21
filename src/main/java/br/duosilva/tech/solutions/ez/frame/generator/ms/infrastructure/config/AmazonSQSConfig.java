@@ -17,22 +17,6 @@ public class AmazonSQSConfig {
 		this.amazonProperties = amazonProperties;
 
 	}
-
-	/*@Bean
-	public SqsClient sqsClient() {
-		SqsClientBuilder builder = SqsClient.builder().region(Region.of(amazonProperties.getRegion()))
-				.credentialsProvider(StaticCredentialsProvider
-						.create(AwsBasicCredentials.create(amazonProperties.getCredentials().getAccessKey(),
-								amazonProperties.getCredentials().getSecretKey())));
-
-		String endpoint = amazonProperties.getSqs().getEndpoint();
-
-		if (endpoint != null && !endpoint.isBlank()) {
-			builder.endpointOverride(URI.create(endpoint));
-		}
-
-		return builder.build();
-	}*/
 	
 	 @Bean
 	    public SqsClient sqsClient() {
@@ -51,28 +35,5 @@ public class AmazonSQSConfig {
 	             .build(); // Sem credentialsProvider e endpointOverride (ok se for LocalStack com configurações globais)
 	 }
 
-	 
-	 
-
-	/*@Bean
-	public SqsAsyncClient sqsAsyncClient() {
-		 SqsAsyncClientBuilder builder = SqsAsyncClient.builder()
-		            .region(Region.of(amazonProperties.getRegion()))
-		            .credentialsProvider(
-		                StaticCredentialsProvider.create(
-		                    AwsBasicCredentials.create(
-		                        amazonProperties.getCredentials().getAccessKey(),
-		                        amazonProperties.getCredentials().getSecretKey()
-		                    )
-		                )
-		            );
-
-		    String endpoint = amazonProperties.getSqs().getEndpoint();
-		    if (endpoint != null && !endpoint.isBlank()) {
-		        builder.endpointOverride(URI.create(endpoint));
-		    }
-
-		    return builder.build();
-	}*/
 
 }

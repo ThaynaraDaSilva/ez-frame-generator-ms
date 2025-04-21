@@ -36,12 +36,7 @@ public class AmazonS3Adapter {
 		this.s3Presigner = s3Presigner;
 	}
 
-	/**
-	 * Uploads a .zip file to the configured S3 bucket.
-	 *
-	 * @param key     the object key (ex: userId/filename.zip)
-	 * @param zipFile the zip file to upload
-	 */
+
 	public void uploadZipToS3(String key, File zipFile) {
 		String bucketName = properties.getS3().getBucketName();
 
@@ -65,11 +60,14 @@ public class AmazonS3Adapter {
 	}
 
 	public InputStream downloadVideo(String bucketName, String objectKey) {
+		long startTime = System.currentTimeMillis();
 		LOGGER.info("#### STARTING DOWNLOAD PROCESS: {}/{} ####", bucketName, objectKey);
 
 		GetObjectRequest request = GetObjectRequest.builder().bucket(bucketName).key(objectKey).build();
-
+		
 		try {
+			long time = System.currentTimeMillis() - startTime;
+			LOGGER.info("#### VIDEO STREAM OPENED FROM S3 IN {} ms ####", time);
 			ResponseInputStream<GetObjectResponse> inputStream = s3Client.getObject(request);
 			return inputStream;
 		} catch (Exception e) {
@@ -77,12 +75,6 @@ public class AmazonS3Adapter {
 		}
 	}
 
-	/**
-	 * Checks if the zip file already exists in the bucket.
-	 *
-	 * @param key object key
-	 * @return true if object exists
-	 */
 	public boolean doesZipExistInS3(String key) {
 		String bucketName = properties.getS3().getBucketName();
 		return s3Client.listObjectsV2(builder -> builder.bucket(bucketName).prefix(key)).contents().stream()

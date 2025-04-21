@@ -3,8 +3,8 @@ name: Frame Generator MS CI/CD Pipeline
 on:
   push:
     branches:
-      - main
-
+      - develop
+  workflow_dispatch: 
 env:
   SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -153,7 +153,8 @@ jobs:
           kubectl apply -f k8s/configmap.yaml
           kubectl apply -f k8s/service.yaml
           kubectl apply -f k8s/deployment.yaml
-          kubectl apply -f k8s/hpa.yaml
+          kubectl apply -f k8s/scaled-object.yaml
+          kubectl apply -f k8s/trigger-auth.yaml
           kubectl rollout restart deployment ez-frame-generator-ms
 
       - name: Force rollout restart
