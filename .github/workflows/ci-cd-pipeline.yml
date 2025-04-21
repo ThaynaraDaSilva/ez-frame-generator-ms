@@ -153,7 +153,8 @@ jobs:
           kubectl apply -f k8s/configmap.yaml
           kubectl apply -f k8s/service.yaml
           kubectl apply -f k8s/deployment.yaml
-          kubectl apply -f k8s/hpa.yaml
+          kubectl apply -f k8s/scaled-object.yaml
+          kubectl apply -f k8s/trigger-auth.yaml
           kubectl rollout restart deployment ez-frame-generator-ms
 
       - name: Force rollout restart
