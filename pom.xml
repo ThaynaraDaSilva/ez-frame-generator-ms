@@ -32,7 +32,7 @@
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 
-		<sonar.projectKey>ez-frame_generator</sonar.projectKey>
+		<sonar.projectKey>ez-frame-solution_ez-frame-generator-ms</sonar.projectKey>
 		<sonar.organization>ez-frame</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 		<sonar.coverage.jacoco.xmlReportPaths>
