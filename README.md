@@ -101,20 +101,6 @@ ez-frame-generator-ms/
 
 ---
 
-## 📊 Modelagem do Banco de Dados
-
-O `ez-frame-generator-ms` utiliza o **DynamoDB** para armazenar metadados dos vídeos processados na tabela `video_metadata`. Estrutura da tabela:
-
-- **Nome da Tabela**: `video_metadata`
-- **Partition Key**: `videoId` (String, ex.: `vid123`)
-- **Atributos**:
-  - `filename`: Nome do arquivo processado (String, ex.: `video_processed.mp4`)
-  - `status`: Status do processamento (String, ex.: `COMPLETED`, `FAILED`)
-  - `errorMessage`: Mensagem de erro, se aplicável (String, ex.: `Erro no processamento`)
-  - `timestamp`: Data/hora do processamento (String, ex.: `2025-04-19T10:10:00Z`)
-
----
-
 ## 🎥 Vídeos de apresentação
 
 [📐 Desenho de Arquitetura](https://youtu.be/ry-GS9WqmaU)
