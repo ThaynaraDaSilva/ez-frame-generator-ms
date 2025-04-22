@@ -1,50 +1,39 @@
-# 🎥 Generator Service (`ez-frame-generator-ms`)
+# 🎥 ez-frame-generator-ms
 
 ## 📌 Contextualização
 
-O **Generator Service** (também chamado de `Processing Service`) é um microserviço da solução `ez-frame`, responsável por **processar vídeos** enfileirados pelo `Ingestion Service`.
-
-- Ele **escuta uma fila SQS**, processa os vídeos (ex.: extrai frames), e **salva os resultados** no Amazon S3.
-- **Atualiza o status** no DynamoDB (tabela `ProcessedVideos`).
-- Após o processamento, **atualiza o status** no `Ingestion Service` via HTTP.
+O microsserviço `ez-frame-generator-ms` é responsável pelo processamento assíncrono de vídeos da solução **ez-frame**. Ele consome mensagens da fila SQS (`video-processing-queue`), faz o download de vídeos do bucket S3 (`ez-frame-video-storage`), gera frames em memória, compacta-os em um arquivo ZIP, e salva o ZIP no S3. Após o processamento, atualiza o status do vídeo no `ez-video-ingestion-ms` via endpoint `http://host:8080/v1/ms/videos/update-status`.
 
 ---
 
 ## 🧩 Desenho de Arquitetura
 
-O diagrama abaixo representa o fluxo do `Generator Service` dentro da solução `ez-frame`, focando no processamento de vídeos e atualização de status:
+![image](https://github.com/user-attachments/assets/da998aa9-deb2-48fc-9025-06d3e1dfb0d1)
 
-![image](https://github.com/user-attachments/assets/9bf71040-3403-4a75-8434-441b826df854)
+---
 
+## 🧱 Componentes da Solução Global ez-frame
 
-> Para visualizar o diagrama, cole o script below in PlantText.
+| **Componente** | **Finalidade** | **Justificativa** |
+| --- | --- | --- |
+| **Clean Architecture** | Organização interna da solução | Foi escolhida para garantir uma estrutura modular, de fácil manutenção e testes. Essa separação clara entre regras de negócio e infraestrutura facilita a escalabilidade da solução ao longo do tempo, conforme o sistema evolui. |
+| **Java 21** | Linguagem principal para implementação | A linguagem Java foi adotada em substituição ao .NET por uma decisão estratégica, considerando a expertise da equipe com o ecossistema Java. Essa escolha visa otimizar o desenvolvimento, reduzir a curva de aprendizado e garantir eficiência na evolução e manutenção da solução. |
+| **Apache Maven** | Gerenciamento de dependências e build | Ferramenta amplamente utilizada no ecossistema Java, facilita a organização do projeto, o versionamento de dependências e o processo de build e deploy. |
+| **Amazon EKS** | Orquestração dos microsserviços da solução | Solução gerenciada baseada em Kubernetes, que facilita o deploy, a escalabilidade e o gerenciamento dos microsserviços (`generator`, `ingestion`, `notification`), mantendo a consistência da infraestrutura. |
+| **Amazon SES** | Envio de e-mails de notificação em caso de erro | Atende ao requisito de notificação automática para o usuário em caso de falha no processamento. É um serviço simples, eficiente e com baixo custo, ideal para esse tipo de comunicação. |
+| **GitHub Actions** | Automatização de build, testes e deploys | O GitHub Actions foi escolhido por estar amplamente consolidado no mercado e por oferecer uma integração direta com repositórios GitHub, simplificando pipelines de entrega contínua. Além disso, a equipe já possui familiaridade com a ferramenta, o que reduz tempo de configuração e acelera o processo de entrega contínua. |
+| **Amazon Cognito** | Autenticação e segurança no microsserviço de usuários | Solução gerenciada que facilita a implementação de autenticação com usuário e senha, atendendo ao requisito de proteger o sistema e controlando o acesso de forma segura e padronizada. |
+| **Amazon SQS** | Gerenciamento da fila de processamento de vídeos | Utilizamos SQS para garantir que os vídeos sejam processados de forma assíncrona e segura, sem perda de requisições, mesmo em momentos de pico. Isso também ajuda a escalar o sistema com segurança. |
+| **DynamoDB** | Armazenamento dos metadados e arquivos gerados (como ZIPs of frames) | Optamos pelo DynamoDB por ser altamente escalável e disponível, atendendo bem à necessidade de processar múltiplos vídeos em paralelo. Seu modelo NoSQL permite evoluir a estrutura dos dados sem migrações complexas, o que é útil caso futuramente a solução precise armazenar também os vídeos. |
+| **Amazon S3** | Armazenamento de vídeos e arquivos ZIP gerados | O S3 foi adotado por ser um serviço de armazenamento de objetos altamente durável, escalável e econômico, perfeito para armazenar vídeos enviados pelos usuários e arquivos ZIP gerados pelo `ez-frame-generator-ms` (bucket `ez-frame-video-storage`). Permite o compartilhamento seguro dos arquivos gerados via presigned URLs e suporta vídeos grandes e múltiplos uploads com facilidade. |
 
-```
-@startuml
-!define RECTANGLE class
-!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+---
 
-Container(sqs, "SQS", "Fila de tarefas")
-Container(processingService, "Generator Service", "Spring Boot (Java 21)", "Processa vídeos")
-Container(ingestionService, "Ingestion Service", "Spring Boot (Java 21)", "Atualiza status")
-Container(dynamodb, "DynamoDB", "Armazena metadados")
-Container(processedVideosTable, "ProcessedVideos", "Tabela", "Metadados de vídeos processados")
-Container(s3, "S3", "Armazena vídeos processados")
+## 🧩 Fluxo de Interação entre Serviços
 
-' Relacionamentos
-dynamodb --> processedVideosTable
-sqs --> processingService : "1. Escuta fila"
-processingService --> s3 : "2. Salva vídeo processado"
-processingService --> processedVideosTable : "3. Atualiza status (ProcessedVideos)"
-processingService --> ingestionService : "4. Chama endpoint (POST /update-status)"
+O diagrama abaixo ilustra o fluxo do `ez-frame-generator-ms` (em verde) e suas interações com outros componentes do sistema.
 
-' Estilização
-skinparam monochrome true
-skinparam shadowing false
-skinparam backgroundColor #FFFFFF
-
-@enduml
-```
+![image](https://github.com/user-attachments/assets/8081bc86-2c7a-4041-affb-ba3841e22d92)
 
 ---
 
@@ -54,22 +43,31 @@ skinparam backgroundColor #FFFFFF
 - 📦 Maven instalado
 - 🔐 Credenciais AWS configuradas (`AWS CLI` ou arquivo `~/.aws/credentials`)
 - 🌐 Acesso a serviços AWS (SQS, S3, DynamoDB) com permissões adequadas
-- 🔗 URL do endpoint do `Ingestion Service` (para chamadas HTTP)
 
 ---
 
 ## 📏 Limites Definidos com Relação a Upload de Vídeos
 
-Embora o `Generator Service` não lide diretamente com uploads, ele processa vídeos que já passaram pelas políticas de upload definidas no `Ingestion Service`:
+Embora o `ez-frame-generator-ms` não lide diretamente com uploads, ele processa vídeos que já passaram pelas políticas de upload definidas no `ez-video-ingestion-ms`:
 
 - **Tamanho Máximo por Arquivo**: 100 MB por vídeo
 - **Limite Diário de Uploads por Usuário**: 10 vídeos por dia
-- **Número Máximo de Arquivos por Requisição**: 5 vídeos por requisição
+- **Número Máximo de Arquivos por Requisição**: 3 vídeos por requisição
 - **Tamanho Total por Requisição**: 300 MB no total por requisição
 
 **Limite Interno do Generator Service**:
 
 - **Máximo de Vídeos Processados Simultaneamente**: 20 vídeos, ajustável via configuração no EKS.
+
+---
+
+## ✅ Requisito para execução da solução
+
+### 🚀 Criar ambiente e realizar deploy na seguinte ordem:
+1. [Infra](https://github.com/ThaynaraDaSilva/ez-frame-infrastructure)
+2. [Ingestion](https://github.com/ThaynaraDaSilva/ez-video-ingestion-ms)
+3. [Generator](https://github.com/ThaynaraDaSilva/ez-frame-generator-ms)
+4. [Notification](https://github.com/ThaynaraDaSilva/ez-frame-notification-ms)
 
 ---
 
@@ -85,28 +83,29 @@ ez-frame-generator-ms/
 │   │   │   └── br/duosilva/tech/solutions/ez/frame/generator/ms/
 │   │   │       ├── adapters/
 │   │   │       │   ├── in/
-│   │   │       │   │   └── sqs/             # Listeners SQS
+│   │   │       │   │   └── queue/           # Integração com SQS
 │   │   │       │   └── out/
-│   │   │       │       └── repository/      # Repositórios (ex.: ProcessedVideosRepository)
+│   │   │       │       ├── storage/         # Integração com S3
+│   │   │       │       └── http/            # Chamadas HTTP ao ingestion-ms
 │   │   │       ├── application/
-│   │   │       │   ├── dto/                # DTOs
-│   │   │       │   └── usecases/           # Casos de uso (ex.: ProcessVideoUseCase)
+│   │   │       │   ├── dto/                 # DTOs
+│   │   │       │   └── usecases/            # Casos de uso
 │   │   │       ├── domain/
-│   │   │       │   └── model/              # Modelos de domínio (ex.: ProcessedVideo)
-│   │   │       └── config/                 # Configurações (ex.: SQSConfig)
+│   │   │       │   └── model/               # Modelos de domínio
+│   │   │       └── config/                  # Configurações
 │   │   └── resources/
-│   │       └── application.yml             # Configurações do Spring Boot
-├── pom.xml                                    # Arquivo Maven com dependências
-└── README.md                                  # Documentação do projeto
+│   │       └── application.yml              # Configurações do Spring Boot
+├── pom.xml                                     # Arquivo Maven com dependências
+└── README.md                                   # Documentação do projeto
 ```
 
 ---
 
 ## 📊 Modelagem do Banco de Dados
 
-O `Generator Service` utiliza o **DynamoDB** para armazenar metadados dos vídeos processados na tabela `ProcessedVideos`. Estrutura da tabela:
+O `ez-frame-generator-ms` utiliza o **DynamoDB** para armazenar metadados dos vídeos processados na tabela `video_metadata`. Estrutura da tabela:
 
-- **Nome da Tabela**: `ProcessedVideos`
+- **Nome da Tabela**: `video_metadata`
 - **Partition Key**: `videoId` (String, ex.: `vid123`)
 - **Atributos**:
   - `filename`: Nome do arquivo processado (String, ex.: `video_processed.mp4`)
@@ -116,60 +115,17 @@ O `Generator Service` utiliza o **DynamoDB** para armazenar metadados dos vídeo
 
 ---
 
-## 🛠️ Como Compilar o Projeto
+## 🎥 Vídeos de apresentação
 
-### 1️⃣ Clone o repositório
+[📐 Desenho de Arquitetura](https://youtu.be/ry-GS9WqmaU)
 
-```bash
-git clone https://github.com/ThaynaraDaSilva/ez-frame-generator-ms.git
-cd ez-frame-generator-ms
-```
+[🔧 Github Rulesets, Pipelines e Sonarqube](https://youtu.be/jqO4ldizBwY)
 
-### 2️⃣ Configure o arquivo `application.yml`
+[🔐 Jornada de Login e Upload de Vídeo](https://youtu.be/sk-AvQ9TnIw)
 
-```yaml
-aws:
-  region: us-east-1
-  sqs:
-    queue-url: <URL_DA_FILA_SQS>
-  s3:
-    bucket: <NOME_DO_BUCKET>
-  dynamodb:
-    table-name: ProcessedVideos
-ingestion-service:
-  url: http://ingestion-service:8080/update-status
-```
+[📧 Jornada de Envio de Notificação](https://youtu.be/mE9PhuUo4Co)
 
-### 3️⃣ Compile e execute o projeto
-
-```bash
-mvn clean install
-mvn spring-boot:run
-```
-
-O serviço começará a escutar a fila SQS e processar vídeos automaticamente.
-
----
-
-## 🧱 Componentes da Solução Global ez-frame
-
-| **Componente** | **Finalidade** | **Justificativa** |
-| --- | --- | --- |
-| **Clean Architecture** | Organização interna da solução | Foi escolhida para garantir uma estrutura modular, de fácil manutenção e testes. Essa separação clara entre regras de negócio e infraestrutura facilita a escalabilidade da solução ao longo do tempo, conforme o sistema evolui. |
-| **Java 21** | Linguagem principal para implementação | A linguagem Java foi adotada em substituição ao .NET por uma decisão estratégica, considerando a expertise da equipe com o ecossistema Java. Essa escolha visa otimizar o desenvolvimento, reduzir a curva de aprendizado e garantir eficiência na evolução e manutenção da solução. |
-| **DynamoDB** | Armazenamento dos metadados dos vídeos processados | Optamos pelo DynamoDB por ser altamente escalável e disponível, atendendo bem à necessidade de processar múltiplos vídeos em paralelo. Seu modelo NoSQL permite evoluir a estrutura dos dados sem migrações complexas, o que é útil caso futuramente a solução precise armazenar também os vídeos. |
-| **Apache Maven** | Gerenciamento de dependências e build | Ferramenta amplamente utilizada no ecossistema Java, facilita a organização do projeto, o versionamento de dependências e o processo de build e deploy. |
-| **Amazon SQS** | Gerenciamento da fila de processamento de vídeos | Utilizamos SQS para garantir que os vídeos sejam processados de forma assíncrona e segura, sem perda de requisições, mesmo em momentos de pico. Isso também ajuda a escalar o sistema com segurança. |
-| **Amazon EKS** | Orquestração dos microsserviços da solução | Solução gerenciada baseada em Kubernetes, que facilita o deploy, a escalabilidade e o gerenciamento dos microsserviços (`generator`, `ingestion`, `notification`), mantendo a consistência da infraestrutura. |
-| **GitHub Actions** | Automatização de build, testes e deploys | O GitHub Actions foi escolhido por estar amplamente consolidado no mercado e por oferecer uma integração direta com repositórios GitHub, simplificando pipelines de entrega contínua. Além disso, a equipe já possui familiaridade com a ferramenta, o que reduz tempo de configuração e acelera o processo de entrega contínua. |
-
----
-
-## 🔗 Demais Projetos Relacionados
-
-**ez-frame-ingestion-ms** — Microserviço que envia vídeos para a fila de processamento, consulta status, e chama o `Notification Service` para enviar e-mails em caso de falha.
-
-**ez-frame-notification-ms** — Microserviço que envia notificações por e-mail em caso de falha no processamento, chamado pelo `Ingestion Service`.
+[🖼️ Jornada de Geração de Frames](https://youtu.be/bfRUG1w-S8w)
 
 ---
 
