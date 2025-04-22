@@ -61,13 +61,11 @@ public class AmazonS3Adapter {
 
 	public InputStream downloadVideo(String bucketName, String objectKey) {
 		long startTime = System.currentTimeMillis();
-		LOGGER.info("#### STARTING DOWNLOAD PROCESS: {}/{} ####", bucketName, objectKey);
-
+	
 		GetObjectRequest request = GetObjectRequest.builder().bucket(bucketName).key(objectKey).build();
 		
 		try {
-			long time = System.currentTimeMillis() - startTime;
-			LOGGER.info("#### VIDEO STREAM OPENED FROM S3 IN {} ms ####", time);
+					
 			ResponseInputStream<GetObjectResponse> inputStream = s3Client.getObject(request);
 			return inputStream;
 		} catch (Exception e) {

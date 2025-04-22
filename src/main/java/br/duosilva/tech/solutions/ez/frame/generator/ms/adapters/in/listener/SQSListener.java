@@ -48,10 +48,10 @@ public class SQSListener {
 
 	}
 
-	@Scheduled(fixedRate = 10000) // 5000 Runs every 5 seconds
+	@Scheduled(fixedRate = 500) // 5000 Runs every 5 seconds
 	public void pollMessagesFromQueue() {
 		// Fetch up to 5 messages at a time
-		ReceiveMessageRequest request = ReceiveMessageRequest.builder().queueUrl(obtainSQSUrl()).maxNumberOfMessages(1) // time
+		ReceiveMessageRequest request = ReceiveMessageRequest.builder().queueUrl(obtainSQSUrl()).maxNumberOfMessages(10) // time
 				.build();
 
 		ReceiveMessageResponse response = sqsAsyncClient.receiveMessage(request).join();
