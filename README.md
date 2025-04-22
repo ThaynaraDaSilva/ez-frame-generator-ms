@@ -2,7 +2,7 @@
 
 ## 📌 Contextualização
 
-O microsserviço `ez-frame-generator-ms` é responsável pelo processamento assíncrono de vídeos da solução **ez-frame**. Ele consome mensagens da fila SQS (`video-processing-queue`), faz o download de vídeos do bucket S3 (`ez-frame-video-storage`), gera frames em memória, compacta-os em um arquivo ZIP, e salva o ZIP no S3. Após o processamento, atualiza o status do vídeo no `ez-video-ingestion-ms` via endpoint `http://host:8080/v1/ms/videos/update-status`.
+O microsserviço `ez-frame-generator-ms` é responsável pelo processamento assíncrono de vídeos da solução **ez-frame**. Ele consome mensagens da fila SQS (`video-processing-queue`), faz o download de vídeos do bucket S3 (`ez-frame-video-storage`), gera frames em memória, compacta-os em um arquivo ZIP, e salva o ZIP no S3. Após o processamento, solicita a atualização do status do vídeo via endpoint `http://host:8080/v1/ms/videos/update-status` (`ez-video-ingestion-ms`).
 
 ---
 
@@ -14,12 +14,14 @@ O microsserviço `ez-frame-generator-ms` é responsável pelo processamento ass�
 
 ## 🛡️ Políticas de Upload de Vídeos
 
-Embora o `ez-frame-generator-ms` não lide diretamente com uploads, ele processa vídeos que já passaram pelas políticas de upload definidas no `ez-video-ingestion-ms`. O projeto foi estruturado com suporte à aplicação de múltiplas políticas configuráveis, facilitando sua evolução para diferentes regras de negócio e, se necessário, a expansão para um serviço com diferentes planos e maior flexibilidade de regras. Para esta entrega, foram aplicadas apenas duas políticas:
+Embora o `ez-frame-generator-ms` não lide diretamente com uploads, ele processa vídeos que já passaram pelas políticas de upload definidas no `ez-video-ingestion-ms`. O projeto foi estruturado com suporte à implementação de múltiplas **políticas configuráveis**, facilitando sua evolução para diferentes regras de negócio e, se necessário, a expansão para um serviço com diferentes planos e maior flexibilidade de regras. **Para esta entrega, definimos a implementação de apenas duas políticas**:
 
 - `validateMaxFilesPerRequest`
 - `validateTotalSizePerRequest`
 
 Essas regras estão centralizadas na classe `VideoUploadPolicy` (pacote `br.duosilva.tech.solutions.ez.video.ingestion.ms.domain.policy`), permitindo fácil manutenção e extensibilidade.
+
+O `ez-frame-generator-ms` está configurado para verificar a fila a cada **500 milissegundos** `(@Scheduled(fixedRate = 500))`, permitindo uma alta frequência de varredura da fila. Em cada execução, ele tenta buscar **até 10 mensagens** por vez `(maxNumberOfMessages(10))`, que é o limite máximo permitido pelo Amazon SQS por chamada. Cada mensagem representa um vídeo que precisa ser processado.
 
 ---
 
@@ -42,7 +44,7 @@ Essas regras estão centralizadas na classe `VideoUploadPolicy` (pacote `br.duos
 
 ## 🧩 Fluxo de Interação entre Serviços
 
-O diagrama abaixo ilustra o fluxo do `ez-frame-generator-ms` (em verde) e suas interações com outros componentes do sistema.
+O diagrama abaixo ilustra o fluxo do `ez-frame-generator-ms` ***(em verde)*** e suas interações com outros componentes do sistema.
 
 ![image](https://github.com/user-attachments/assets/8081bc86-2c7a-4041-affb-ba3841e22d92)
 
