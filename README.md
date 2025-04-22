@@ -50,7 +50,7 @@ O diagrama abaixo ilustra o fluxo do `ez-frame-generator-ms` ***(em verde)*** e 
 
 ---
 
-## ✅ Pré-requisitos
+## ✅ Pré-requisitos para solução ez-frame (Todos os Microserviços)
 
 - ☕ **Java 21 instalado**
 - 📦 **Maven instalado**
