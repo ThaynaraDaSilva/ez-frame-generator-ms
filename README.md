@@ -12,7 +12,7 @@ O microsserviço `ez-frame-generator-ms` é responsável pelo processamento ass�
 
 ---
 
-🛡️ Políticas de Upload de Vídeos
+## 🛡️ Políticas de Upload de Vídeos
 
 Embora o `ez-frame-generator-ms` não lide diretamente com uploads, ele processa vídeos que já passaram pelas políticas de upload definidas no `ez-video-ingestion-ms`. O projeto foi estruturado com suporte à aplicação de múltiplas políticas configuráveis, facilitando sua evolução para diferentes regras de negócio e, se necessário, a expansão para um serviço com diferentes planos e maior flexibilidade de regras. Para esta entrega, foram aplicadas apenas duas políticas:
 
