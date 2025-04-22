@@ -68,6 +68,22 @@ O diagrama abaixo ilustra o fluxo do `ez-frame-generator-ms` ***(em verde)*** e 
   - `video-processing-queue`
   - `video-processing-queue-dlq`
 
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ses:SendEmail",
+                "ses:SendRawEmail"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
+
 ---
 
 ## ✅ Requisito para execução da solução
