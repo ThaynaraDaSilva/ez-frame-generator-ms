@@ -52,18 +52,22 @@ O diagrama abaixo ilustra o fluxo do `ez-frame-generator-ms` ***(em verde)*** e 
 
 ## ✅ Pré-requisitos para solução ez-frame (Todos os Microserviços)
 
-- ☕ **Java 21 instalado**
-- 📦 **Maven instalado**
+- ☕ **Java 21**
+- 📦 **Maven**
 - 🔐 **Credenciais AWS configuradas no repositório como GitHub Secrets**  
   - `AWS_ACCESS_KEY_ID`  
   - `AWS_SECRET_ACCESS_KEY`
 - 🔐 **Credenciais do SonarQube configuradas no repositório como GitHub Secrets**  
   - `SONAR_TOKEN`
+  - `PROJECT_KEY`
+- 🔐 **Credenciais do Dockerhub configuradas no repositório como GitHub Secrets**  
+  - `DOCKER_PASSWORD`
+  - `DOCKER_USERNAME`
 - 👤 **Criar UserPool e AppClient no Amazon Cognito**
-- 📧 **Criar entity (e-mail verificado) no Amazon SES**
-- 📄 Configurar as filas:
+- 📄 **Configurar as filas**:
   - `video-processing-queue`
   - `video-processing-queue-dlq`
+- 📧 **Criar Entity (e-mail verificado) no Amazon SES**
 - 🛡️ **Criar usuário IAM com política SES para envio de e-mails**  
   - Permissões necessárias: `ses:SendEmail` e `ses:SendRawEmail`
   - Exemplo de **policy JSON** para colar na criação da política no IAM:
