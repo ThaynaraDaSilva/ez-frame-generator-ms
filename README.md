@@ -35,7 +35,7 @@ Essas regras estão centralizadas na classe `VideoUploadPolicy` (pacote `br.duos
 | **GitHub Actions** | Automatização de build, testes e deploys | O GitHub Actions foi escolhido por estar amplamente consolidado no mercado e por oferecer uma integração direta com repositórios GitHub, simplificando pipelines de entrega contínua. Além disso, a equipe já possui familiaridade com a ferramenta, o que reduz tempo de configuração e acelera o processo de entrega contínua. |
 | **Amazon Cognito** | Autenticação e segurança no microsserviço de usuários | Solução gerenciada que facilita a implementação de autenticação com usuário e senha, atendendo ao requisito de proteger o sistema e controlando o acesso de forma segura e padronizada. |
 | **Amazon SQS** | Gerenciamento da fila de processamento de vídeos | Utilizamos SQS para garantir que os vídeos sejam processados de forma assíncrona e segura, sem perda de requisições, mesmo em momentos de pico. Isso também ajuda a escalar o sistema com segurança. |
-| **DynamoDB** | Armazenamento dos metadados e arquivos gerados (como ZIPs of frames) | Optamos pelo DynamoDB por ser altamente escalável e disponível, atendendo bem à necessidade de processar múltiplos vídeos em paralelo. Seu modelo NoSQL permite evoluir a estrutura dos dados sem migrações complexas, o que é útil caso futuramente a solução precise armazenar também os vídeos. |
+| **DynamoDB** | Armazenamento dos metadados | Optamos pelo DynamoDB por ser altamente escalável e disponível, atendendo bem à necessidade de processar múltiplos vídeos em paralelo. Seu modelo NoSQL permite evoluir a estrutura dos dados sem migrações complexas, o que é útil caso futuramente a solução precise armazenar também os vídeos. |
 | **Amazon S3** | Armazenamento de vídeos e arquivos ZIP gerados | O S3 foi adotado por ser um serviço de armazenamento de objetos altamente durável, escalável e econômico, perfeito para armazenar vídeos enviados pelos usuários e arquivos ZIP gerados pelo `ez-frame-generator-ms` (bucket `ez-frame-video-storage`). Permite o compartilhamento seguro dos arquivos gerados via presigned URLs e suporta vídeos grandes e múltiplos uploads com facilidade. |
 
 ---
@@ -50,10 +50,21 @@ O diagrama abaixo ilustra o fluxo do `ez-frame-generator-ms` (em verde) e suas i
 
 ## ✅ Pré-requisitos
 
-- ☕ Java 21 instalado
-- 📦 Maven instalado
-- 🔐 Credenciais AWS configuradas (`AWS CLI` ou arquivo `~/.aws/credentials`)
-- 🌐 Acesso a serviços AWS (SQS, S3, DynamoDB) com permissões adequadas
+- ☕ **Java 21 instalado**
+- 📦 **Maven instalado**
+- 🔐 **Credenciais AWS configuradas no repositório como GitHub Secrets**  
+  - `AWS_ACCESS_KEY_ID`  
+  - `AWS_SECRET_ACCESS_KEY`
+- 🔐 **Credenciais do SonarQube configuradas no repositório como GitHub Secrets**  
+  - `SONAR_TOKEN`
+- 👤 **Criar UserPool e AppClient no Amazon Cognito**
+- 📧 **Criar entity (e-mail verificado) no Amazon SES**
+- 🛡️ **Criar usuário IAM com política SES para envio de e-mails**  
+  - Permissões necessárias: `ses:SendEmail` e `ses:SendRawEmail`
+  - Exemplo de **policy JSON** para colar na criação da política no IAM:
+- 📄 Configurar as filas:
+  - `video-processing-queue`
+  - `video-processing-queue-dlq`
 
 ---
 
