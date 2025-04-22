@@ -66,13 +66,11 @@ public class FrameGeneratorUseCase {
 
 	private File downloadVideoAsFile(VideoDataResponseDto dto) throws IOException {
 		InputStream stream = amazonS3Adapter.downloadVideo(dto.getS3BucketName(), dto.getS3Key());
-		LOGGER.info("#### DOWNLOAD VIDEO PROCESS COMPLETED ####");
 		return FileUtils.convertStreamToFile(stream, ".mp4");
 	}
 
 	private File generateZipFromVideo(File videoFile) {
 		File zip = videoProcessingService.generateVideoFrames(videoFile);
-		LOGGER.info("#### GENERATE ZIP COMPLETED ####");
 		return zip;
 	}
 
@@ -81,10 +79,8 @@ public class FrameGeneratorUseCase {
 			LOGGER.warn("#### ZIP ALREADY EXISTS IN S3: {} — SKIPPING UPLOAD ####", s3Key);
 		} else {
 			amazonS3Adapter.uploadZipToS3(s3Key, zipFile);
-			LOGGER.info("#### ZIP UPLOADED TO S3: {} ####", s3Key);
 		}
 		String url = amazonS3Adapter.generatePresignedUrl(s3Key, PRESIGNED_URL_DURATION);
-		LOGGER.info("#### PRESIGNED URL GENERATED ####");
 		return url;
 	}
 
